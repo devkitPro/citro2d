@@ -1,0 +1,16 @@
+*~
+*.3dsx
+*.elf
+*.exe
+*.smdh
+*.gz
+*.bz2
+*.xz
+Thumbs.db
+build/
+deps/
+release/
+debug/
+lib/
+bin/
+doc/
