@@ -15,7 +15,7 @@ typedef struct
  *  @param[in] Pointer to sprite
  *  @param[in] image Image to use
  */
-void C2D_SpriteFromImage(C2D_Sprite* sprite, C2D_Image image)
+static inline void C2D_SpriteFromImage(C2D_Sprite* sprite, C2D_Image image)
 {
 	sprite->image           = image;
 	sprite->params.pos.x    = 0.0f;
