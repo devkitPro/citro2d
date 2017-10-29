@@ -76,6 +76,12 @@ static inline void C2D_SceneBottomScreen(void)
  */
 C3D_RenderTarget* C2D_CreateScreenTarget(gfxScreen_t screen, gfx3dSide_t side);
 
+/** @brief Helper function to clear a rendertarget using the specified color
+ *  @param[in] target Rendertarget to clear
+ *  @param[in] color Color to fill the target with
+ */
+void C2D_TargetClear(C3D_RenderTarget* target, u32 color);
+
 /** @brief Helper function to draw a 2D scene on a render target
  *  @param[in] target Render target to draw the 2D scene to
  */

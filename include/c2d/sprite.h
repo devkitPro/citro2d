@@ -1,5 +1,5 @@
 #pragma once
-#include "spritesheet.h
+#include "spritesheet.h"
 
 typedef struct
 {
@@ -47,6 +47,8 @@ static inline void C2D_SpriteScale(C2D_Sprite* sprite, float x, float y)
 {
 	sprite->params.pos.w *= x;
 	sprite->params.pos.h *= y;
+	sprite->params.center.x *= x;
+	sprite->params.center.y *= x;
 }
 
 /** @brief Rotate sprite (relative)
@@ -85,8 +87,12 @@ static inline void C2D_SpriteMove(C2D_Sprite* sprite, float x, float y)
  */
 static inline void C2D_SpriteSetScale(C2D_Sprite* sprite, float x, float y)
 {
+	float oldCenterX = sprite->params.center.x / sprite->params.pos.w;
+	float oldCenterY = sprite->params.center.y / sprite->params.pos.h;
 	sprite->params.pos.w = x*sprite->image.subtex->width;
 	sprite->params.pos.h = y*sprite->image.subtex->height;
+	sprite->params.center.x = oldCenterX*sprite->params.pos.w;
+	sprite->params.center.y = oldCenterY*sprite->params.pos.h;
 }
 
 /** @brief Rotate sprite (absolute)
@@ -107,12 +113,23 @@ static inline void C2D_SpriteSetRotationDegrees(C2D_Sprite* sprite, float degree
 	C2D_SpriteSetRotation(sprite, C3D_AngleFromDegrees(degrees));
 }
 
-/** @brief Set the center of a sprite (absolute)
+/** @brief Set the center of a sprite in values independent of the sprite size (absolute)
  *  @param[in] sprite  Pointer to sprite
- *  @param[in] x       X position of the center
- *  @param[in] y       Y position of the center
+ *  @param[in] x       X position of the center (0.0 through 1.0)
+ *  @param[in] y       Y position of the center (0.0 through 1.0)
  */
 static inline void C2D_SpriteSetCenter(C2D_Sprite* sprite, float x, float y)
+{
+	sprite->params.center.x = x*sprite->params.pos.w;
+	sprite->params.center.y = y*sprite->params.pos.h;
+}
+
+/** @brief Set the center of a sprite in terms of pixels (absolute)
+ *  @param[in] sprite  Pointer to sprite
+ *  @param[in] x       X position of the center (in pixels)
+ *  @param[in] y       Y position of the center (in pixels)
+ */
+static inline void C2D_SpriteSetCenterRaw(C2D_Sprite* sprite, float x, float y)
 {
 	sprite->params.center.x = x;
 	sprite->params.center.y = y;
@@ -143,7 +160,7 @@ static inline void C2D_SpriteSetDepth(C2D_Sprite* sprite, float depth)
  */
 static inline bool C2D_SpriteDraw(const C2D_Sprite* sprite)
 {
-	return C2D_DrawImage(sprite->img, sprite->params);
+	return C2D_DrawImage(sprite->image, sprite->params);
 }
 
 /** @} */

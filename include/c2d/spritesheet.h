@@ -17,11 +17,10 @@ C2D_SpriteSheet C2D_SpriteSheetLoad(const char* filename);
 
 /** @brief Load a sprite sheet from memory
  *  @param[in] data Data to load
- *  @param[in] size Size of data
  *  @returns Sprite sheet handle
  *  @retval NULL Error
  */
-C2D_SpriteSheet C2D_SpriteSheetLoadFromMem(const void* data, size_t size);
+C2D_SpriteSheet C2D_SpriteSheetLoadFromMem(const void* data);
 
 /** @brief Load sprite sheet from file descriptor
  *  @param[in] fd File descriptor used to load data

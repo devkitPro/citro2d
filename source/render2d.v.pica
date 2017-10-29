@@ -1,0 +1,47 @@
+; PICA200 vertex shader for citro2d
+
+; Uniforms
+.fvec mdlvMtx[4], projMtx[4]
+
+; Constants
+.constf common_const(0.0, 1.0, 0.5, 0.0)
+.alias  zeros  common_const.xxxx ; Vector full of 0.0
+.alias  ones   common_const.yyyy ; Vector full of 1.0
+.alias  halves common_const.zzzz ; Vector full of 0.5
+
+; Outputs
+.out oPosition  position
+.out oTexCoord0 texcoord0
+.out oColor     color
+
+; Inputs
+.in iPosition v0
+.in iTexCoord v1
+
+; Main procedure
+.entry render2d_main
+.proc render2d_main
+	; r0 = vec4(iPosition, 1.0)
+	mov r0.xyz, iPosition
+	mov r0.w,   ones
+
+	; r1 = mdlvMtx * r0
+	dp4 r1.x, mdlvMtx[0], r0
+	dp4 r1.y, mdlvMtx[1], r0
+	dp4 r1.z, mdlvMtx[2], r0
+	dp4 r1.w, mdlvMtx[3], r0
+
+	; oPosition = projMtx * r1
+	dp4 oPosition.x, projMtx[0], r1
+	dp4 oPosition.y, projMtx[1], r1
+	dp4 oPosition.z, projMtx[2], r1
+	dp4 oPosition.w, projMtx[3], r1
+
+	; oTexCoord0 = iTexCoord
+	mov oTexCoord0, iTexCoord
+
+	; oColor = vec4(1.0)
+	mov oColor, ones
+
+	end
+.end
