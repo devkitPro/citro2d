@@ -102,42 +102,42 @@ static inline void C2D_SceneBegin(C3D_RenderTarget* target)
  *  @param[in] params Parameters with which to draw the image
  *  @returns true on success, false on failure
  */
-bool C2D_DrawImage(C2D_Image img, C2D_DrawParams params);
+bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params);
 
 static inline bool C2D_DrawImageAt(C2D_Image img, float x, float y)
 {
 	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { 0.0f, 0.0f }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, params);
+	return C2D_DrawImage(img, &params);
 }
 
 static inline bool C2D_DrawImageAtCentered(C2D_Image img, float x, float y, float centerX, float centerY)
 {
 	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { centerX, centerY }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, params);
+	return C2D_DrawImage(img, &params);
 }
 
 static inline bool C2D_DrawImageAtRotated(C2D_Image img, float x, float y, float angle)
 {
 	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { img.subtex->width/2.0f, img.subtex->height/2.0f }, 0.0f, angle };
-	return C2D_DrawImage(img, params);
+	return C2D_DrawImage(img, &params);
 }
 
 static inline bool C2D_DrawImageAtScaled(C2D_Image img, float x, float y, float scaleX, float scaleY)
 {
 	C2D_DrawParams params = { { x, y, scaleX*img.subtex->width, scaleY*img.subtex->height }, { 0.0f, 0.0f }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, params);
+	return C2D_DrawImage(img, &params);
 }
 
 static inline bool C2D_DrawImageAtCenteredRotated(C2D_Image img, float x, float y, float angle, float centerX, float centerY)
 {
 	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { centerX, centerY }, 0.0f, angle };
-	return C2D_DrawImage(img, params);
+	return C2D_DrawImage(img, &params);
 }
 
 static inline bool C2D_DrawImageAtCenteredRotatedScaled(C2D_Image img, float x, float y, float angle, float centerX, float centerY, float scaleX, float scaleY)
 {
 	C2D_DrawParams params = { { x, y, scaleX*img.subtex->width, scaleY*img.subtex->height }, { centerX, centerY }, 0.0f, angle };
-	return C2D_DrawImage(img, params);
+	return C2D_DrawImage(img, &params);
 }
 
 /** @} */

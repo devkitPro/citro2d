@@ -158,7 +158,7 @@ static inline void C2Di_RotatePoint(float* point, float rsin, float rcos)
 	point[1] = y;
 }
 
-bool C2D_DrawImage(C2D_Image img, C2D_DrawParams params)
+bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
@@ -177,33 +177,33 @@ bool C2D_DrawImage(C2D_Image img, C2D_DrawParams params)
 	// Calculate positions
 	float topLeft[2], topRight[2], botLeft[2], botRight[2];
 
-	topLeft[0]  = -params.center.x;
-	topLeft[1]  = -params.center.y;
-	topRight[0] = -params.center.x+params.pos.w;
-	topRight[1] = -params.center.y;
-	botLeft[0]  = -params.center.x;
-	botLeft[1]  = -params.center.y+params.pos.h;
-	botRight[0] = -params.center.x+params.pos.w;
-	botRight[1] = -params.center.y+params.pos.h;
+	topLeft[0]  = -params->center.x;
+	topLeft[1]  = -params->center.y;
+	topRight[0] = -params->center.x+params->pos.w;
+	topRight[1] = -params->center.y;
+	botLeft[0]  = -params->center.x;
+	botLeft[1]  = -params->center.y+params->pos.h;
+	botRight[0] = -params->center.x+params->pos.w;
+	botRight[1] = -params->center.y+params->pos.h;
 
-	if (params.angle != 0.0f)
+	if (params->angle != 0.0f)
 	{
-		float rsin = sinf(params.angle);
-		float rcos = cosf(params.angle);
+		float rsin = sinf(params->angle);
+		float rcos = cosf(params->angle);
 		C2Di_RotatePoint(topLeft,  rsin, rcos);
 		C2Di_RotatePoint(topRight, rsin, rcos);
 		C2Di_RotatePoint(botLeft,  rsin, rcos);
 		C2Di_RotatePoint(botRight, rsin, rcos);
 	}
 
-	topLeft[0]  += params.pos.x;
-	topLeft[1]  += params.pos.y;
-	topRight[0] += params.pos.x;
-	topRight[1] += params.pos.y;
-	botLeft[0]  += params.pos.x;
-	botLeft[1]  += params.pos.y;
-	botRight[0] += params.pos.x;
-	botRight[1] += params.pos.y;
+	topLeft[0]  += params->pos.x;
+	topLeft[1]  += params->pos.y;
+	topRight[0] += params->pos.x;
+	topRight[1] += params->pos.y;
+	botLeft[0]  += params->pos.x;
+	botLeft[1]  += params->pos.y;
+	botRight[0] += params->pos.x;
+	botRight[1] += params->pos.y;
 
 	// Calculate texcoords
 	float tcTopLeft[2], tcTopRight[2], tcBotLeft[2], tcBotRight[2];
@@ -213,13 +213,13 @@ bool C2D_DrawImage(C2D_Image img, C2D_DrawParams params)
 	Tex3DS_SubTextureBottomRight(img.subtex, &tcBotRight[0], &tcBotRight[1]);
 
 	// Draw triangles
-	C2Di_AppendVtx(topLeft[0],  topLeft[1],  params.depth, tcTopLeft[0],  tcTopLeft[1]);
-	C2Di_AppendVtx(botLeft[0],  botLeft[1],  params.depth, tcBotLeft[0],  tcBotLeft[1]);
-	C2Di_AppendVtx(botRight[0], botRight[1], params.depth, tcBotRight[0], tcBotRight[1]);
+	C2Di_AppendVtx(topLeft[0],  topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1]);
+	C2Di_AppendVtx(botLeft[0],  botLeft[1],  params->depth, tcBotLeft[0],  tcBotLeft[1]);
+	C2Di_AppendVtx(botRight[0], botRight[1], params->depth, tcBotRight[0], tcBotRight[1]);
 
-	C2Di_AppendVtx(topLeft[0],  topLeft[1],  params.depth, tcTopLeft[0],  tcTopLeft[1]);
-	C2Di_AppendVtx(botRight[0], botRight[1], params.depth, tcBotRight[0], tcBotRight[1]);
-	C2Di_AppendVtx(topRight[0], topRight[1], params.depth, tcTopRight[0], tcTopRight[1]);
+	C2Di_AppendVtx(topLeft[0],  topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1]);
+	C2Di_AppendVtx(botRight[0], botRight[1], params->depth, tcBotRight[0], tcBotRight[1]);
+	C2Di_AppendVtx(topRight[0], topRight[1], params->depth, tcTopRight[0], tcTopRight[1]);
 
 	return true;
 }
