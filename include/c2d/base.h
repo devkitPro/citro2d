@@ -45,28 +45,22 @@ void C2D_Fini(void);
  */
 void C2D_Prepare(void);
 
-/** @brief Finishes rendering a 2D scene
- *  @param[in] endFrame Whether this is the last 2D scene to be drawn in this frame
- */
-void C2D_SceneDone(bool endFrame);
+/** @brief Ensures all 2D objects so far have been drawn */
+void C2D_Flush(void);
 
 /** @brief Configures the size of the 2D scene.
  *  @param[in] width The width of the scene, in pixels.
  *  @param[in] height The height of the scene, in pixels.
- *  @param[in] tilt Whether to accommodate for the 3DS's sideways screens.
+ *  @param[in] tilt Whether the scene is tilted like the 3DS's sideways screens.
  */
 void C2D_SceneSize(u32 width, u32 height, bool tilt);
 
-/** @brief Configures the size of the 2D scene to match that of the 3DS's top screen (400x240 tilted). */
-static inline void C2D_SceneTopScreen(void)
+/** @brief Configures the size of the 2D scene to match that of the specified render target.
+ *  @param[in] target Render target
+ */
+static inline void C2D_SceneTarget(C3D_RenderTarget* target)
 {
-	C2D_SceneSize(400, 240, true);
-}
-
-/** @brief Configures the size of the 2D scene to match that of the 3DS's bottom screen (320x240 tilted). */
-static inline void C2D_SceneBottomScreen(void)
-{
-	C2D_SceneSize(320, 240, true);
+	C2D_SceneSize(target->frameBuf.width, target->frameBuf.height, target->linked);
 }
 
 /** @brief Helper function to create a render target for a screen
@@ -77,18 +71,19 @@ static inline void C2D_SceneBottomScreen(void)
 C3D_RenderTarget* C2D_CreateScreenTarget(gfxScreen_t screen, gfx3dSide_t side);
 
 /** @brief Helper function to clear a rendertarget using the specified color
- *  @param[in] target Rendertarget to clear
+ *  @param[in] target Render target to clear
  *  @param[in] color Color to fill the target with
  */
 void C2D_TargetClear(C3D_RenderTarget* target, u32 color);
 
-/** @brief Helper function to draw a 2D scene on a render target
+/** @brief Helper function to begin drawing a 2D scene on a render target
  *  @param[in] target Render target to draw the 2D scene to
  */
 static inline void C2D_SceneBegin(C3D_RenderTarget* target)
 {
+	C2D_Flush();
 	C3D_FrameDrawOn(target);
-	C2D_SceneSize(target->frameBuf.width, target->frameBuf.height, target->linked);
+	C2D_SceneTarget(target);
 }
 
 /** @} */

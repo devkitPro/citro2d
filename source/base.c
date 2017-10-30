@@ -5,6 +5,14 @@ C2Di_Context __C2Di_Context;
 static C3D_Mtx s_projTop, s_projBot;
 static int uLoc_mdlvMtx, uLoc_projMtx;
 
+static void C2Di_FrameEndHook(void* unused)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	C2Di_FlushVtxBuf();
+	ctx->vtxBufPos = 0;
+	ctx->vtxBufLastPos = 0;
+}
+
 bool C2D_Init(size_t maxObjects)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
@@ -46,6 +54,8 @@ bool C2D_Init(size_t maxObjects)
 	ctx->vtxBufLastPos = 0;
 	Mtx_Identity(&ctx->projMtx);
 	Mtx_Identity(&ctx->mdlvMtx);
+
+	C3D_FrameEndHook(C2Di_FrameEndHook, NULL);
 	return true;
 }
 
@@ -56,6 +66,7 @@ void C2D_Fini(void)
 		return;
 
 	ctx->flags = 0;
+	C3D_FrameEndHook(NULL, NULL);
 	shaderProgramFree(&ctx->program);
 	DVLB_Free(ctx->shader);
 	linearFree(ctx->vtxBuf);
@@ -74,26 +85,21 @@ void C2D_Prepare(void)
 
 	// Set texenv0 to output the texture color blended with the vertex color
 	C3D_TexEnv* env = C3D_GetTexEnv(0);
+	C3D_TexEnvInit(env);
 	C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
-	C3D_TexEnvOp(env, C3D_Both, 0, 0, 0);
 	C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 
 	// Configure depth test to overwrite pixels with the same depth (needed to draw overlapping sprites)
 	C3D_DepthTest(true, GPU_GEQUAL, GPU_WRITE_ALL);
 }
 
-void C2D_SceneDone(bool endFrame)
+void C2D_Flush(void)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
 		return;
 
 	C2Di_FlushVtxBuf();
-	if (endFrame)
-	{
-		ctx->vtxBufPos = 0;
-		ctx->vtxBufLastPos = 0;
-	}
 }
 
 void C2D_SceneSize(u32 width, u32 height, bool tilt)
