@@ -144,6 +144,19 @@ static inline void C2D_SceneBegin(C3D_RenderTarget* target)
 
 /** @} */
 
+/** @defgroup Env Drawing environment functions
+ *  @{
+ */
+
+/** @brief Configures the fading color
+ *  @param[in] color 32-bit RGBA color value to be used as the fading color (0 by default)
+ *  @remark The alpha component of the color is used as the strength of the fading color.
+ *          If alpha is zero, the fading color has no effect. If it is the highest value,
+ *          the rendered pixels will all have the fading color. Everything inbetween is
+ *          rendered as a blend of the original pixel color and the fading color.
+ */
+void C2D_Fade(u32 color);
+
 /** @defgroup Drawing Drawing functions
  *  @{
  */

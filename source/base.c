@@ -214,6 +214,16 @@ void C2D_TargetClear(C3D_RenderTarget* target, u32 color)
 	C3D_FrameBufClear(&target->frameBuf, C3D_CLEAR_ALL, __builtin_bswap32(color), 0);
 }
 
+void C2D_Fade(u32 color)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return false;
+
+	ctx->flags |= C2DiF_DirtyFade;
+	ctx->fadeClr = color;
+}
+
 static inline void C2Di_RotatePoint(float* point, float rsin, float rcos)
 {
 	float x = point[0] * rcos - point[1] * rsin;
