@@ -29,6 +29,12 @@ static inline C2D_SpriteSheet C2Di_PostLoadSheet(C2D_SpriteSheet sheet)
 	{
 		free(sheet);
 		sheet = NULL;
+	} else
+	{
+		// Configure white border around texture sheet to allow for drawing
+		// non-textured polygons without having to disable GPU_TEXTURE0
+		sheet->tex.border = 0xFFFFFFFF;
+		C3D_TexSetWrap(&sheet->tex, GPU_CLAMP_TO_BORDER, GPU_CLAMP_TO_BORDER);
 	}
 	return sheet;
 }

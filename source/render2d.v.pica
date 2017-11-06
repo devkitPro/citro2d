@@ -4,19 +4,23 @@
 .fvec mdlvMtx[4], projMtx[4]
 
 ; Constants
-.constf common_const(0.0, 1.0, 0.5, 0.0)
+.constf common_const(0.0, 1.0, 0.5, 0.003921568393707275390625)
 .alias  zeros  common_const.xxxx ; Vector full of 0.0
 .alias  ones   common_const.yyyy ; Vector full of 1.0
 .alias  halves common_const.zzzz ; Vector full of 0.5
+.alias  clrdiv common_const.wwww ; Vector full of 1/255 (float24 approximation)
 
 ; Outputs
 .out oPosition  position
 .out oTexCoord0 texcoord0
+.out oTexCoord1 texcoord1
 .out oColor     color
 
 ; Inputs
 .in iPosition v0
 .in iTexCoord v1
+.in iBlend    v2
+.in iColor    v3
 
 ; Main procedure
 .entry render2d_main
@@ -40,8 +44,11 @@
 	; oTexCoord0 = iTexCoord
 	mov oTexCoord0, iTexCoord
 
-	; oColor = vec4(1.0)
-	mov oColor, ones
+	; oTexCoord1 = iBlend
+	mov oTexCoord1, iBlend
+
+	; oColor = iColor / 255
+	mul oColor, clrdiv, iColor
 
 	end
 .end
