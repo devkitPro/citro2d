@@ -211,7 +211,7 @@ void C2D_TargetClear(C3D_RenderTarget* target, u32 color)
 {
 	C2Di_FlushVtxBuf();
 	C3D_FrameSplit(0);
-	C3D_FrameBufClear(&target->frameBuf, C3D_CLEAR_ALL, color, 0);
+	C3D_FrameBufClear(&target->frameBuf, C3D_CLEAR_ALL, __builtin_bswap32(color), 0);
 }
 
 static inline void C2Di_RotatePoint(float* point, float rsin, float rcos)

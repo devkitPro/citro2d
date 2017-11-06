@@ -4,6 +4,12 @@
 
 #define C2D_DEFAULT_MAX_OBJECTS 4096
 
+#ifdef __cplusplus
+#define C2D_CONSTEXPR constexpr
+#else
+#define C2D_CONSTEXPR static inline
+#endif
+
 typedef struct
 {
 	struct
@@ -25,6 +31,56 @@ typedef struct ALIGN(8)
 	C3D_Tex* tex;
 	const Tex3DS_SubTexture* subtex;
 } C2D_Image;
+
+/** @defgroup Helper Helper functions
+ *  @{
+ */
+
+/** @brief Clamps a value between bounds
+ *  @param[in] x The value to clamp
+ *  @param[in] min The lower bound
+ *  @param[in] max The upper bound
+ *  @returns The clamped value
+ */
+C2D_CONSTEXPR float C2D_Clamp(float x, float min, float max)
+{
+	return x <= min ? min : x >= max ? max : x;
+}
+
+/** @brief Converts a float to u8
+ *  @param[in] x Input value (0.0~1.0)
+ *  @returns Output value (0~255)
+ */
+C2D_CONSTEXPR u8 C2D_FloatToU8(float x)
+{
+	return (u8)(255.0f*C2D_Clamp(x, 0.0f, 1.0f)+0.5f);
+}
+
+/** @brief Builds a 32-bit RGBA color value
+ *  @param[in] r Red component (0~255)
+ *  @param[in] g Green component (0~255)
+ *  @param[in] b Blue component (0~255)
+ *  @param[in] a Alpha component (0~255)
+ *  @returns The 32-bit RGBA color value
+ */
+C2D_CONSTEXPR u32 C2D_Color32(u8 r, u8 g, u8 b, u8 a)
+{
+	return r | (g << (u32)8) | (b << (u32)16) | (a << (u32)24);
+}
+
+/** @brief Builds a 32-bit RGBA color value from float values
+ *  @param[in] r Red component (0.0~1.0)
+ *  @param[in] g Green component (0.0~1.0)
+ *  @param[in] b Blue component (0.0~1.0)
+ *  @param[in] a Alpha component (0.0~1.0)
+ *  @returns The 32-bit RGBA color value
+ */
+C2D_CONSTEXPR u32 C2D_Color32f(float r, float g, float b, float a)
+{
+	return C2D_Color32(C2D_FloatToU8(r),C2D_FloatToU8(g),C2D_FloatToU8(b),C2D_FloatToU8(a));
+}
+
+/** @} */
 
 /** @defgroup Base Basic functions
  *  @{
@@ -72,7 +128,7 @@ C3D_RenderTarget* C2D_CreateScreenTarget(gfxScreen_t screen, gfx3dSide_t side);
 
 /** @brief Helper function to clear a rendertarget using the specified color
  *  @param[in] target Render target to clear
- *  @param[in] color Color to fill the target with
+ *  @param[in] color 32-bit RGBA color value to fill the target with
  */
 void C2D_TargetClear(C3D_RenderTarget* target, u32 color);
 
