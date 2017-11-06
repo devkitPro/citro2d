@@ -135,4 +135,6 @@ static inline bool C2D_DrawImageAtCenteredRotatedScaled(C2D_Image img, float x, 
 	return C2D_DrawImage(img, &params);
 }
 
+bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, float x2, float y2, u32 clr2, float depth);
+
 /** @} */

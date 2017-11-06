@@ -284,7 +284,24 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params)
 	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], 0.0f, 0xFF<<24);
 	C2Di_AppendVtx(quad.topRight[0], quad.topRight[1], params->depth, tcTopRight[0], tcTopRight[1], 0.0f, 0xFF<<24);
 
+	return true;
+}
 
+bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, float x2, float y2, u32 clr2, float depth)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return false;
+	if (3 > (ctx->vtxBufSize - ctx->vtxBufPos))
+		return false;
+
+	// Not necessary:
+	//C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_Update();
+
+	C2Di_AppendVtx(x0, y0, depth, 1.0f, 1.0f, 1.0f, clr0);
+	C2Di_AppendVtx(x1, y1, depth, 1.0f, 1.0f, 1.0f, clr1);
+	C2Di_AppendVtx(x2, y2, depth, 1.0f, 1.0f, 1.0f, clr2);
 	return true;
 }
 
