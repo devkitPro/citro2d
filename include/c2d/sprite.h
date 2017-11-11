@@ -158,7 +158,7 @@ static inline void C2D_SpriteSetDepth(C2D_Sprite* sprite, float depth)
 /** @brief Draw sprite
  *  @param[in] sprite Sprite to draw
  */
-static inline bool C2D_SpriteDraw(const C2D_Sprite* sprite)
+static inline bool C2D_DrawSprite(const C2D_Sprite* sprite)
 {
 	return C2D_DrawImage(sprite->image, &sprite->params);
 }
