@@ -309,9 +309,9 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
 
-	C2Di_AppendVtx(x0, y0, depth, 1.0f, 1.0f, 1.0f, clr0);
-	C2Di_AppendVtx(x1, y1, depth, 1.0f, 1.0f, 1.0f, clr1);
-	C2Di_AppendVtx(x2, y2, depth, 1.0f, 1.0f, 1.0f, clr2);
+	C2Di_AppendVtx(x0, y0, depth, -1.0f, -1.0f, 1.0f, clr0);
+	C2Di_AppendVtx(x1, y1, depth, -1.0f, -1.0f, 1.0f, clr1);
+	C2Di_AppendVtx(x2, y2, depth, -1.0f, -1.0f, 1.0f, clr2);
 	return true;
 }
 
