@@ -14,6 +14,7 @@ extern "C" {
 #include "c2d/base.h"
 #include "c2d/spritesheet.h"
 #include "c2d/sprite.h"
+#include "c2d/text.h"
 
 #ifdef __cplusplus
 }
