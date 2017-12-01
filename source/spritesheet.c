@@ -39,12 +39,12 @@ static inline C2D_SpriteSheet C2Di_PostLoadSheet(C2D_SpriteSheet sheet)
 	return sheet;
 }
 
-C2D_SpriteSheet C2D_SpriteSheetLoadFromMem(const void* data)
+C2D_SpriteSheet C2D_SpriteSheetLoadFromMem(const void* data, size_t size)
 {
 	C2D_SpriteSheet sheet = C2Di_SpriteSheetAlloc();
 	if (sheet)
 	{
-		sheet->t3x = Tex3DS_TextureImport(data, &sheet->tex, NULL, false);
+		sheet->t3x = Tex3DS_TextureImport(data, size, &sheet->tex, NULL, false);
 		sheet = C2Di_PostLoadSheet(sheet);
 	}
 	return sheet;
