@@ -6,8 +6,10 @@
 
 #ifdef __cplusplus
 #define C2D_CONSTEXPR constexpr
+#define C2D_OPTIONAL(_x) =_x
 #else
 #define C2D_CONSTEXPR static inline
+#define C2D_OPTIONAL(_x)
 #endif
 
 typedef struct
@@ -26,11 +28,30 @@ typedef struct
 	float angle;
 } C2D_DrawParams;
 
-typedef struct ALIGN(8)
+typedef struct
+{
+	u32   color; ///< RGB tint color and Alpha transparency
+	float blend; ///< Blending strength of the tint color (0.0~1.0)
+} C2D_Tint;
+
+typedef enum
+{
+	C2D_TopLeft,  ///< Top left corner
+	C2D_TopRight, ///< Top right corner
+	C2D_BotLeft,  ///< Bottom left corner
+	C2D_BotRight, ///< Bottom right corner
+} C2D_Corner;
+
+typedef struct
 {
 	C3D_Tex* tex;
 	const Tex3DS_SubTexture* subtex;
 } C2D_Image;
+
+typedef struct
+{
+	C2D_Tint corners[4];
+} C2D_ImageTint;
 
 /** @defgroup Helper Helper functions
  *  @{
@@ -78,6 +99,84 @@ C2D_CONSTEXPR u32 C2D_Color32(u8 r, u8 g, u8 b, u8 a)
 C2D_CONSTEXPR u32 C2D_Color32f(float r, float g, float b, float a)
 {
 	return C2D_Color32(C2D_FloatToU8(r),C2D_FloatToU8(g),C2D_FloatToU8(b),C2D_FloatToU8(a));
+}
+
+/** @brief Configures one corner of an image tint structure
+ *  @param[in] tint Image tint structure
+ *  @param[in] corner The corner of the image to tint
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+static inline void C2D_SetImageTint(C2D_ImageTint* tint, C2D_Corner corner, u32 color, float blend)
+{
+	tint->corners[corner].color = color;
+	tint->corners[corner].blend = blend;
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to all corners
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+static inline void C2D_PlainImageTint(C2D_ImageTint* tint, u32 color, float blend)
+{
+	C2D_SetImageTint(tint, C2D_TopLeft,  color, blend);
+	C2D_SetImageTint(tint, C2D_TopRight, color, blend);
+	C2D_SetImageTint(tint, C2D_BotLeft,  color, blend);
+	C2D_SetImageTint(tint, C2D_BotRight, color, blend);
+}
+
+/** @brief Configures an image tint structure to just apply transparency to the image
+ *  @param[in] tint Image tint structure
+ *  @param[in] alpha Alpha transparency value to apply to the image
+ */
+static inline void C2D_AlphaImageTint(C2D_ImageTint* tint, float alpha)
+{
+	C2D_PlainImageTint(tint, C2D_Color32f(0.0f, 0.0f, 0.0f, alpha), 0.0f);
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to the top side (e.g. for gradients)
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+static inline void C2D_TopImageTint(C2D_ImageTint* tint, u32 color, float blend)
+{
+	C2D_SetImageTint(tint, C2D_TopLeft,  color, blend);
+	C2D_SetImageTint(tint, C2D_TopRight, color, blend);
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to the bottom side (e.g. for gradients)
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+static inline void C2D_BottomImageTint(C2D_ImageTint* tint, u32 color, float blend)
+{
+	C2D_SetImageTint(tint, C2D_BotLeft,  color, blend);
+	C2D_SetImageTint(tint, C2D_BotRight, color, blend);
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to the left side (e.g. for gradients)
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+static inline void C2D_LeftImageTint(C2D_ImageTint* tint, u32 color, float blend)
+{
+	C2D_SetImageTint(tint, C2D_TopLeft, color, blend);
+	C2D_SetImageTint(tint, C2D_BotLeft, color, blend);
+}
+
+/** @brief Configures an image tint structure with the specified tint parameters applied to the right side (e.g. for gradients)
+ *  @param[in] tint Image tint structure
+ *  @param[in] color RGB tint color and Alpha transparency
+ *  @param[in] blend Blending strength of the tint color (0.0~1.0)
+ */
+static inline void C2D_RightImageTint(C2D_ImageTint* tint, u32 color, float blend)
+{
+	C2D_SetImageTint(tint, C2D_TopRight, color, blend);
+	C2D_SetImageTint(tint, C2D_BotRight, color, blend);
 }
 
 /** @} */
@@ -164,44 +263,45 @@ void C2D_Fade(u32 color);
 /** @brief Draws an image using the GPU
  *  @param[in] img Handle of the image to draw
  *  @param[in] params Parameters with which to draw the image
+ *  @param[in] tint Tint parameters to apply to the image (optional, can be null)
  *  @returns true on success, false on failure
  */
-bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params);
+bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageTint* tint C2D_OPTIONAL(nullptr));
 
 static inline bool C2D_DrawImageAt(C2D_Image img, float x, float y)
 {
 	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { 0.0f, 0.0f }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, &params);
+	return C2D_DrawImage(img, &params, NULL);
 }
 
 static inline bool C2D_DrawImageAtCentered(C2D_Image img, float x, float y, float centerX, float centerY)
 {
 	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { centerX, centerY }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, &params);
+	return C2D_DrawImage(img, &params, NULL);
 }
 
 static inline bool C2D_DrawImageAtRotated(C2D_Image img, float x, float y, float angle)
 {
 	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { img.subtex->width/2.0f, img.subtex->height/2.0f }, 0.0f, angle };
-	return C2D_DrawImage(img, &params);
+	return C2D_DrawImage(img, &params, NULL);
 }
 
 static inline bool C2D_DrawImageAtScaled(C2D_Image img, float x, float y, float scaleX, float scaleY)
 {
 	C2D_DrawParams params = { { x, y, scaleX*img.subtex->width, scaleY*img.subtex->height }, { 0.0f, 0.0f }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, &params);
+	return C2D_DrawImage(img, &params, NULL);
 }
 
 static inline bool C2D_DrawImageAtCenteredRotated(C2D_Image img, float x, float y, float angle, float centerX, float centerY)
 {
 	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { centerX, centerY }, 0.0f, angle };
-	return C2D_DrawImage(img, &params);
+	return C2D_DrawImage(img, &params, NULL);
 }
 
 static inline bool C2D_DrawImageAtCenteredRotatedScaled(C2D_Image img, float x, float y, float angle, float centerX, float centerY, float scaleX, float scaleY)
 {
 	C2D_DrawParams params = { { x, y, scaleX*img.subtex->width, scaleY*img.subtex->height }, { centerX, centerY }, 0.0f, angle };
-	return C2D_DrawImage(img, &params);
+	return C2D_DrawImage(img, &params, NULL);
 }
 
 bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, float x2, float y2, u32 clr2, float depth);

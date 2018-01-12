@@ -160,7 +160,16 @@ static inline void C2D_SpriteSetDepth(C2D_Sprite* sprite, float depth)
  */
 static inline bool C2D_DrawSprite(const C2D_Sprite* sprite)
 {
-	return C2D_DrawImage(sprite->image, &sprite->params);
+	return C2D_DrawImage(sprite->image, &sprite->params, NULL);
+}
+
+/** @brief Draw sprite with color tinting
+ *  @param[in] sprite Sprite to draw
+ *  @param[in] tint Color tinting parameters to apply to the sprite
+ */
+static inline bool C2D_DrawSpriteTinted(const C2D_Sprite* sprite, const C2D_ImageTint* tint)
+{
+	return C2D_DrawImage(sprite->image, &sprite->params, tint);
 }
 
 /** @} */

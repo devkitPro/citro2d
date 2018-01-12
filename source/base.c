@@ -263,7 +263,7 @@ void C2Di_CalcQuad(C2Di_Quad* quad, const C2D_DrawParams* params)
 	quad->botRight[1] += params->pos.y;
 }
 
-bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params)
+bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageTint* tint)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
@@ -285,14 +285,21 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params)
 	Tex3DS_SubTextureBottomLeft (img.subtex, &tcBotLeft[0],  &tcBotLeft[1]);
 	Tex3DS_SubTextureBottomRight(img.subtex, &tcBotRight[0], &tcBotRight[1]);
 
-	// Draw triangles
-	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  0.0f, 0xFF<<24);
-	C2Di_AppendVtx(quad.botLeft[0],  quad.botLeft[1],  params->depth, tcBotLeft[0],  tcBotLeft[1],  0.0f, 0xFF<<24);
-	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], 0.0f, 0xFF<<24);
+	// Calculate colors
+	static const C2D_Tint s_defaultTint = { 0xFF<<24, 0.0f };
+	const C2D_Tint* tintTopLeft  = tint ? &tint->corners[C2D_TopLeft]  : &s_defaultTint;
+	const C2D_Tint* tintTopRight = tint ? &tint->corners[C2D_TopRight] : &s_defaultTint;
+	const C2D_Tint* tintBotLeft  = tint ? &tint->corners[C2D_BotLeft]  : &s_defaultTint;
+	const C2D_Tint* tintBotRight = tint ? &tint->corners[C2D_BotRight] : &s_defaultTint;
 
-	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  0.0f, 0xFF<<24);
-	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], 0.0f, 0xFF<<24);
-	C2Di_AppendVtx(quad.topRight[0], quad.topRight[1], params->depth, tcTopRight[0], tcTopRight[1], 0.0f, 0xFF<<24);
+	// Draw triangles
+	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  tintTopLeft->blend,  tintTopLeft->color);
+	C2Di_AppendVtx(quad.botLeft[0],  quad.botLeft[1],  params->depth, tcBotLeft[0],  tcBotLeft[1],  tintBotLeft->blend,  tintBotLeft->color);
+	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], tintBotRight->blend, tintBotRight->color);
+
+	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  tintTopLeft->blend,  tintTopLeft->color);
+	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], tintBotRight->blend, tintBotRight->color);
+	C2Di_AppendVtx(quad.topRight[0], quad.topRight[1], params->depth, tcTopRight[0], tcTopRight[1], tintTopRight->blend, tintTopRight->color);
 
 	return true;
 }
