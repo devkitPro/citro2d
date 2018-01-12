@@ -260,7 +260,7 @@ void C2D_Fade(u32 color);
  *  @{
  */
 
-/** @brief Draws an image using the GPU
+/** @brief Draws an image using the GPU (variant accepting C2D_DrawParams)
  *  @param[in] img Handle of the image to draw
  *  @param[in] params Parameters with which to draw the image
  *  @param[in] tint Tint parameters to apply to the image (optional, can be null)
@@ -268,42 +268,67 @@ void C2D_Fade(u32 color);
  */
 bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageTint* tint C2D_OPTIONAL(nullptr));
 
-static inline bool C2D_DrawImageAt(C2D_Image img, float x, float y)
+/** @brief Draws an image using the GPU (variant accepting position/scaling)
+ *  @param[in] img Handle of the image to draw
+ *  @param[in] x X coordinate at which to place the top left corner of the image
+ *  @param[in] y Y coordinate at which to place the top left corner of the image
+ *  @param[in] depth Depth value to draw the image with
+ *  @param[in] tint Tint parameters to apply to the image (optional, can be null)
+ *  @param[in] scaleX Horizontal scaling factor to apply to the image (optional, by default 1.0f)
+ *  @param[in] scaleY Vertical scaling factor to apply to the image (optional, by default 1.0f)
+ */
+static inline bool C2D_DrawImageAt(C2D_Image img, float x, float y, float depth,
+	const C2D_ImageTint* tint C2D_OPTIONAL(nullptr),
+	float scaleX C2D_OPTIONAL(1.0f), float scaleY C2D_OPTIONAL(1.0f))
 {
-	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { 0.0f, 0.0f }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, &params, NULL);
+	C2D_DrawParams params =
+	{
+		{ x, y, scaleX*img.subtex->width, scaleY*img.subtex->height },
+		{ 0.0f, 0.0f },
+		depth, 0.0f
+	};
+	return C2D_DrawImage(img, &params, tint);
 }
 
-static inline bool C2D_DrawImageAtCentered(C2D_Image img, float x, float y, float centerX, float centerY)
+/** @brief Draws an image using the GPU (variant accepting position/scaling/rotation)
+ *  @param[in] img Handle of the image to draw
+ *  @param[in] x X coordinate at which to place the center of the image
+ *  @param[in] y Y coordinate at which to place the center of the image
+ *  @param[in] depth Depth value to draw the image with
+ *  @param[in] angle Angle (in radians) to rotate the image by, counter-clockwise
+ *  @param[in] tint Tint parameters to apply to the image (optional, can be null)
+ *  @param[in] scaleX Horizontal scaling factor to apply to the image (optional, by default 1.0f)
+ *  @param[in] scaleY Vertical scaling factor to apply to the image (optional, by default 1.0f)
+ */
+static inline bool C2D_DrawImageAtRotated(C2D_Image img, float x, float y, float depth, float angle,
+	const C2D_ImageTint* tint C2D_OPTIONAL(nullptr),
+	float scaleX C2D_OPTIONAL(1.0f), float scaleY C2D_OPTIONAL(1.0f))
 {
-	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { centerX, centerY }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, &params, NULL);
+	C2D_DrawParams params =
+	{
+		{ x, y, scaleX*img.subtex->width, scaleY*img.subtex->height },
+		{ img.subtex->width/2.0f, img.subtex->height/2.0f },
+		depth, angle
+	};
+	return C2D_DrawImage(img, &params, tint);
 }
 
-static inline bool C2D_DrawImageAtRotated(C2D_Image img, float x, float y, float angle)
-{
-	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { img.subtex->width/2.0f, img.subtex->height/2.0f }, 0.0f, angle };
-	return C2D_DrawImage(img, &params, NULL);
-}
-
-static inline bool C2D_DrawImageAtScaled(C2D_Image img, float x, float y, float scaleX, float scaleY)
-{
-	C2D_DrawParams params = { { x, y, scaleX*img.subtex->width, scaleY*img.subtex->height }, { 0.0f, 0.0f }, 0.0f, 0.0f };
-	return C2D_DrawImage(img, &params, NULL);
-}
-
-static inline bool C2D_DrawImageAtCenteredRotated(C2D_Image img, float x, float y, float angle, float centerX, float centerY)
-{
-	C2D_DrawParams params = { { x, y, img.subtex->width, img.subtex->height }, { centerX, centerY }, 0.0f, angle };
-	return C2D_DrawImage(img, &params, NULL);
-}
-
-static inline bool C2D_DrawImageAtCenteredRotatedScaled(C2D_Image img, float x, float y, float angle, float centerX, float centerY, float scaleX, float scaleY)
-{
-	C2D_DrawParams params = { { x, y, scaleX*img.subtex->width, scaleY*img.subtex->height }, { centerX, centerY }, 0.0f, angle };
-	return C2D_DrawImage(img, &params, NULL);
-}
-
-bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, float x2, float y2, u32 clr2, float depth);
+/** @brief Draws a plain triangle using the GPU
+ *  @param[in] x0 X coordinate of the first vertex of the triangle
+ *  @param[in] y0 Y coordinate of the first vertex of the triangle
+ *  @param[in] clr0 32-bit RGBA color of the first vertex of the triangle
+ *  @param[in] x1 X coordinate of the second vertex of the triangle
+ *  @param[in] y1 Y coordinate of the second vertex of the triangle
+ *  @param[in] clr1 32-bit RGBA color of the second vertex of the triangle
+ *  @param[in] x2 X coordinate of the third vertex of the triangle
+ *  @param[in] y2 Y coordinate of the third vertex of the triangle
+ *  @param[in] clr2 32-bit RGBA color of the third vertex of the triangle
+ *  @param[in] depth Depth value to draw the triangle with
+ */
+bool C2D_DrawTriangle(
+	float x0, float y0, u32 clr0,
+	float x1, float y1, u32 clr1,
+	float x2, float y2, u32 clr2,
+	float depth);
 
 /** @} */
