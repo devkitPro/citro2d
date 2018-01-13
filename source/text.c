@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 static C3D_Tex* s_glyphSheets;
+static float s_textScale;
 
 typedef struct C2Di_Glyph_s
 {
@@ -48,6 +49,7 @@ static void C2Di_TextEnsureLoad(void)
 	// Load the glyph texture sheets
 	TGLP_s* glyphInfo = fontGetGlyphInfo();
 	s_glyphSheets = malloc(sizeof(C3D_Tex)*glyphInfo->nSheets);
+	s_textScale = 25.0f / glyphInfo->baselinePos;
 	if (!s_glyphSheets)
 		svcBreak(USERBREAK_PANIC);
 
@@ -128,6 +130,7 @@ const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, 
 		text->width += glyphData.xAdvance;
 	}
 	text->end = buf->glyphCount;
+	text->width *= s_textScale;
 	return (const char*)p;
 }
 
@@ -164,6 +167,9 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	C2Di_Glyph* begin = &text->buf->glyphs[text->begin];
 	C2Di_Glyph* end   = &text->buf->glyphs[text->end];
 	C2Di_Glyph* cur;
+
+	scaleX *= s_textScale;
+	scaleY *= s_textScale;
 
 	float glyphZ = z;
 	float glyphH = scaleY*fontGetGlyphInfo()->cellHeight;
