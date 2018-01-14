@@ -49,7 +49,7 @@ static void C2Di_TextEnsureLoad(void)
 	// Load the glyph texture sheets
 	TGLP_s* glyphInfo = fontGetGlyphInfo();
 	s_glyphSheets = malloc(sizeof(C3D_Tex)*glyphInfo->nSheets);
-	s_textScale = 25.0f / glyphInfo->baselinePos;
+	s_textScale = 30.0f / glyphInfo->cellHeight;
 	if (!s_glyphSheets)
 		svcBreak(USERBREAK_PANIC);
 
