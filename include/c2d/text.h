@@ -15,6 +15,7 @@ typedef struct
 	size_t      begin; ///< Reserved for internal use.
 	size_t      end;   ///< Reserved for internal use.
 	float       width; ///< Width of the text in pixels, according to 1x scale metrics.
+	u32         lines; ///< Number of lines in the text, according to 1x scale metrics;
 } C2D_Text;
 
 enum
@@ -76,6 +77,15 @@ const char* C2D_TextParse(C2D_Text* text, C2D_TextBuf buf, const char* str);
  *  @param[in] text Pointer to text object.
  */
 void C2D_TextOptimize(const C2D_Text* text);
+
+/** @brief Retrieves the total dimensions of a text object.
+ *  @param[in] text Pointer to text object.
+ *  @param[in] scaleX Horizontal size of the font. 1.0f corresponds to the native size of the font.
+ *  @param[in] scaleY Vertical size of the font. 1.0f corresponds to the native size of the font.
+ *  @param[out] outWidth (optional) Variable in which to store the width of the text.
+ *  @param[out] outHeight (optional) Variable in which to store the height of the text.
+ */
+void C2D_TextGetDimensions(const C2D_Text* text, float scaleX, float scaleY, float* outWidth, float* outHeight);
 
 /** @brief Draws text using the GPU.
  *  @param[in] text Pointer to text object.

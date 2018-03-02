@@ -131,6 +131,7 @@ const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, 
 	}
 	text->end = buf->glyphCount;
 	text->width *= s_textScale;
+	text->lines = 1;
 	return (const char*)p;
 }
 
@@ -153,6 +154,7 @@ const char* C2D_TextParse(C2D_Text* text, C2D_TextBuf buf, const char* str)
 	}
 
 	text->end = buf->glyphCount;
+	text->lines = lineNo;
 	return str;
 }
 
@@ -160,6 +162,14 @@ void C2D_TextOptimize(const C2D_Text* text)
 {
 	// Dirty and probably not very efficient/overkill, but it should work
 	qsort(&text->buf->glyphs[text->begin], text->end-text->begin, sizeof(C2Di_Glyph), C2Di_GlyphComp);
+}
+
+void C2D_TextGetDimensions(const C2D_Text* text, float scaleX, float scaleY, float* outWidth, float* outHeight)
+{
+	if (outWidth)
+		*outWidth  = scaleX*text->width;
+	if (outHeight)
+		*outHeight = ceilf(scaleY*s_textScale*fontGetInfo()->lineFeed)*text->lines;
 }
 
 void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, float scaleX, float scaleY, ...)
