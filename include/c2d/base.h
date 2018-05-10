@@ -274,8 +274,8 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
  *  @param[in] y Y coordinate at which to place the top left corner of the image
  *  @param[in] depth Depth value to draw the image with
  *  @param[in] tint Tint parameters to apply to the image (optional, can be null)
- *  @param[in] scaleX Horizontal scaling factor to apply to the image (optional, by default 1.0f)
- *  @param[in] scaleY Vertical scaling factor to apply to the image (optional, by default 1.0f)
+ *  @param[in] scaleX Horizontal scaling factor to apply to the image (optional, by default 1.0f); negative values apply a horizontal flip
+ *  @param[in] scaleY Vertical scaling factor to apply to the image (optional, by default 1.0f); negative values apply a vertical flip
  */
 static inline bool C2D_DrawImageAt(C2D_Image img, float x, float y, float depth,
 	const C2D_ImageTint* tint C2D_OPTIONAL(nullptr),
@@ -297,8 +297,8 @@ static inline bool C2D_DrawImageAt(C2D_Image img, float x, float y, float depth,
  *  @param[in] depth Depth value to draw the image with
  *  @param[in] angle Angle (in radians) to rotate the image by, counter-clockwise
  *  @param[in] tint Tint parameters to apply to the image (optional, can be null)
- *  @param[in] scaleX Horizontal scaling factor to apply to the image (optional, by default 1.0f)
- *  @param[in] scaleY Vertical scaling factor to apply to the image (optional, by default 1.0f)
+ *  @param[in] scaleX Horizontal scaling factor to apply to the image (optional, by default 1.0f); negative values apply a horizontal flip
+ *  @param[in] scaleY Vertical scaling factor to apply to the image (optional, by default 1.0f); negative values apply a vertical flip
  */
 static inline bool C2D_DrawImageAtRotated(C2D_Image img, float x, float y, float depth, float angle,
 	const C2D_ImageTint* tint C2D_OPTIONAL(nullptr),

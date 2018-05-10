@@ -232,16 +232,28 @@ static inline void C2Di_RotatePoint(float* point, float rsin, float rcos)
 	point[1] = y;
 }
 
+static inline void C2Di_SwapUV(float* a, float* b)
+{
+	float temp[2] = { a[0], a[1] };
+	a[0] = b[0];
+	a[1] = b[1];
+	b[0] = temp[0];
+	b[1] = temp[1];
+}
+
 void C2Di_CalcQuad(C2Di_Quad* quad, const C2D_DrawParams* params)
 {
+	const float w = fabs(params->pos.w);
+	const float h = fabs(params->pos.h);
+
 	quad->topLeft[0]  = -params->center.x;
 	quad->topLeft[1]  = -params->center.y;
-	quad->topRight[0] = -params->center.x+params->pos.w;
+	quad->topRight[0] = -params->center.x+w;
 	quad->topRight[1] = -params->center.y;
 	quad->botLeft[0]  = -params->center.x;
-	quad->botLeft[1]  = -params->center.y+params->pos.h;
-	quad->botRight[0] = -params->center.x+params->pos.w;
-	quad->botRight[1] = -params->center.y+params->pos.h;
+	quad->botLeft[1]  = -params->center.y+h;
+	quad->botRight[0] = -params->center.x+w;
+	quad->botRight[1] = -params->center.y+h;
 
 	if (params->angle != 0.0f)
 	{
@@ -284,6 +296,18 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 	Tex3DS_SubTextureTopRight   (img.subtex, &tcTopRight[0], &tcTopRight[1]);
 	Tex3DS_SubTextureBottomLeft (img.subtex, &tcBotLeft[0],  &tcBotLeft[1]);
 	Tex3DS_SubTextureBottomRight(img.subtex, &tcBotRight[0], &tcBotRight[1]);
+
+	// Perform flip if needed
+	if (params->pos.w < 0)
+	{
+		C2Di_SwapUV(tcTopLeft, tcTopRight);
+		C2Di_SwapUV(tcBotLeft, tcBotRight);
+	}
+	if (params->pos.h < 0)
+	{
+		C2Di_SwapUV(tcTopLeft, tcBotLeft);
+		C2Di_SwapUV(tcTopRight, tcBotRight);
+	}
 
 	// Calculate colors
 	static const C2D_Tint s_defaultTint = { 0xFF<<24, 0.0f };

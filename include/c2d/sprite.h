@@ -40,8 +40,8 @@ static inline void C2D_SpriteFromSheet(C2D_Sprite* sprite, C2D_SpriteSheet sheet
 
 /** @brief Scale sprite (relative)
  *  @param[in] sprite Pointer to sprite
- *  @param[in] x      X scale
- *  @param[in] y      Y scale
+ *  @param[in] x      X scale (negative values flip the sprite horizontally)
+ *  @param[in] y      Y scale (negative values flip the sprite vertically)
  */
 static inline void C2D_SpriteScale(C2D_Sprite* sprite, float x, float y)
 {
@@ -82,8 +82,8 @@ static inline void C2D_SpriteMove(C2D_Sprite* sprite, float x, float y)
 
 /** @brief Scale sprite (absolute)
  *  @param[in] sprite Pointer to sprite
- *  @param[in] x      X scale
- *  @param[in] y      Y scale
+ *  @param[in] x      X scale (negative values flip the sprite horizontally)
+ *  @param[in] y      Y scale (negative values flip the sprite vertically)
  */
 static inline void C2D_SpriteSetScale(C2D_Sprite* sprite, float x, float y)
 {
