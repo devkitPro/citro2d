@@ -331,4 +331,34 @@ bool C2D_DrawTriangle(
 	float x2, float y2, u32 clr2,
 	float depth);
 
+/** @brief Draws a plain rectangle using the GPU
+ *  @param[in] x X coordinate of the top-left vertex of the rectangle
+ *  @param[in] y Y coordinate of the top-left vertex of the rectangle
+ *  @param[in] z Z coordinate (depth value) to draw the rectangle with
+ *  @param[in] w Width of the rectangle
+ *  @param[in] h Height of the rectangle
+ *  @param[in] clr0 32-bit RGBA color of the top-left corner of the rectangle
+ *  @param[in] clr1 32-bit RGBA color of the top-right corner of the rectangle
+ *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the rectangle
+ *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the rectangle
+ */
+bool C2D_DrawRectangle(
+	float x, float y, float z, float w, float h,
+	u32 clr0, u32 clr1, u32 clr2, u32 clr3);
+
+/** @brief Draws a plain rectangle using the GPU (with a solid color)
+ *  @param[in] x X coordinate of the top-left vertex of the rectangle
+ *  @param[in] y Y coordinate of the top-left vertex of the rectangle
+ *  @param[in] z Z coordinate (depth value) to draw the rectangle with
+ *  @param[in] w Width of the rectangle
+ *  @param[in] h Height of the rectangle
+ *  @param[in] clr 32-bit RGBA color of the rectangle
+ */
+static inline bool C2D_DrawRectSolid(
+	float x, float y, float z, float w, float h,
+	u32 clr)
+{
+	return C2D_DrawRectangle(x,y,z,w,h,clr,clr,clr,clr);
+}
+
 /** @} */

@@ -346,6 +346,28 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 	return true;
 }
 
+bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u32 clr1, u32 clr2, u32 clr3)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return false;
+	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
+		return false;
+
+	// Not necessary:
+	//C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_Update();
+
+	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 1.0f, clr0);
+	C2Di_AppendVtx(x,   y+h, z, -1.0f, -1.0f, 1.0f, clr2);
+	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f, 1.0f, clr3);
+
+	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 1.0f, clr0);
+	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f, 1.0f, clr3);
+	C2Di_AppendVtx(x+w, y,   z, -1.0f, -1.0f, 1.0f, clr1);
+	return true;
+}
+
 void C2Di_AppendVtx(float x, float y, float z, float u, float v, float blend, u32 color)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
