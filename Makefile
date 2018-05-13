@@ -103,7 +103,7 @@ dist-bin: all
 	@tar --exclude=*~ -cjf $(TARGET)-$(VERSION).tar.bz2 include lib
 
 dist-src:
-	@tar --exclude=*~ -cjf $(TARGET)-$(VERSION).tar.bz2 include source Makefile
+	@tar --exclude=*~ -cjf $(TARGET)-src-$(VERSION).tar.bz2 include source Makefile
 
 dist: dist-src dist-bin
 
