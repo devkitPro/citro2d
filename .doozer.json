@@ -19,7 +19,8 @@
       ],
 
       "buildcmd": [
-        "doxygen"
+        "doxygen",
+        "echo citro2d.devkitpro.org > docs/html/CNAME"
       ],
 
       "artifacts": [{
