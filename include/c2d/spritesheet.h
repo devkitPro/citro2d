@@ -1,3 +1,7 @@
+/**
+ * @file spritesheet.h
+ * @brief Spritesheet (texture atlas) loading and management
+ */
 #pragma once
 #include "base.h"
 

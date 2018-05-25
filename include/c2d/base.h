@@ -1,3 +1,7 @@
+/**
+ * @file base.h
+ * @brief Basic citro2d initialization and drawing API
+ */
 #pragma once
 #include <citro3d.h>
 #include <tex3ds.h>
@@ -255,6 +259,8 @@ static inline void C2D_SceneBegin(C3D_RenderTarget* target)
  *          rendered as a blend of the original pixel color and the fading color.
  */
 void C2D_Fade(u32 color);
+
+/** @} */
 
 /** @defgroup Drawing Drawing functions
  *  @{

@@ -1,3 +1,7 @@
+/**
+ * @file sprite.h
+ * @brief Stateful sprite API
+ */
 #pragma once
 #include "spritesheet.h"
 

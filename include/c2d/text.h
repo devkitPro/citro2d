@@ -1,3 +1,7 @@
+/**
+ * @file text.h
+ * @brief Text rendering API
+ */
 #pragma once
 #include "base.h"
 

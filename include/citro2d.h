@@ -1,3 +1,7 @@
+/**
+ * @file citro2d.h
+ * @brief Central citro2d header. Includes all others.
+ */
 #pragma once
 
 #ifdef CITRO2D_BUILD
