@@ -13,4 +13,5 @@ release/
 debug/
 lib/
 bin/
-doc/
+docs/
+.vscode/
