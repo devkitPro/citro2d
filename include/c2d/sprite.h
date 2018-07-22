@@ -5,6 +5,8 @@
 #pragma once
 #include "spritesheet.h"
 
+#include <math.h>
+
 typedef struct
 {
 	C2D_Image image;
@@ -95,8 +97,8 @@ static inline void C2D_SpriteSetScale(C2D_Sprite* sprite, float x, float y)
 	float oldCenterY = sprite->params.center.y / sprite->params.pos.h;
 	sprite->params.pos.w = x*sprite->image.subtex->width;
 	sprite->params.pos.h = y*sprite->image.subtex->height;
-	sprite->params.center.x = oldCenterX*sprite->params.pos.w;
-	sprite->params.center.y = oldCenterY*sprite->params.pos.h;
+	sprite->params.center.x = fabsf(oldCenterX*sprite->params.pos.w);
+	sprite->params.center.y = fabsf(oldCenterY*sprite->params.pos.h);
 }
 
 /** @brief Rotate sprite (absolute)
