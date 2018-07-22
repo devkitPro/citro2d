@@ -5,8 +5,6 @@
 #pragma once
 #include "spritesheet.h"
 
-#include <math.h>
-
 typedef struct
 {
 	C2D_Image image;
