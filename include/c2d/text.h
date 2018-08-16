@@ -34,6 +34,15 @@ enum
  */
 C2D_TextBuf C2D_TextBufNew(size_t maxGlyphs);
 
+/** @brief Resizes a text buffer.
+ *  @param[in] buf Text buffer to resize.
+ *  @param[in] maxGlyphs Maximum number of glyphs that can be stored in the buffer.
+ *  @returns New text buffer handle (or NULL on failure).
+ *  @remarks If successful, old text buffer handle becomes invalid.
+ */
+C2D_TextBuf C2D_TextBufResize(C2D_TextBuf buf, size_t maxGlyphs);
+
+
 /** @brief Deletes a text buffer.
  *  @param[in] buf Text buffer handle.
  *  @remarks This also invalidates all text objects previously created with this buffer.

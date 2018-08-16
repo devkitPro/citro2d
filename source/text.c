@@ -26,6 +26,11 @@ struct C2D_TextBuf_s
 	C2Di_Glyph glyphs[0];
 };
 
+static size_t C2Di_TextBufBufferSize(size_t maxGlyphs)
+{
+	return sizeof(struct C2D_TextBuf_s) + maxGlyphs*sizeof(C2Di_Glyph);
+}
+
 static int C2Di_GlyphComp(const void* _g1, const void* _g2)
 {
 	const C2Di_Glyph* g1 = (C2Di_Glyph*)_g1;
@@ -69,15 +74,30 @@ static void C2Di_TextEnsureLoad(void)
 	}
 }
 
-C2D_TextBuf C2D_TextBufNew(size_t maxChars)
+C2D_TextBuf C2D_TextBufNew(size_t maxGlyphs)
 {
 	C2Di_TextEnsureLoad();
 
-	C2D_TextBuf buf = (C2D_TextBuf)malloc(sizeof(struct C2D_TextBuf_s) + maxChars*sizeof(C2Di_Glyph));
+	C2D_TextBuf buf = (C2D_TextBuf)malloc(C2Di_TextBufBufferSize(maxGlyphs));
 	if (!buf) return NULL;
 	memset(buf, 0, sizeof(struct C2D_TextBuf_s));
-	buf->glyphBufSize = maxChars;
+	buf->glyphBufSize = maxGlyphs;
 	return buf;
+}
+
+C2D_TextBuf C2D_TextBufResize(C2D_TextBuf buf, size_t maxGlyphs)
+{
+	size_t oldMax = buf->glyphBufSize;
+	C2D_TextBuf newBuf = (C2D_TextBuf)realloc(buf, C2Di_TextBufBufferSize(maxGlyphs));
+	if (!newBuf) return NULL;
+
+	// zero out new glyphs
+	if (maxGlyphs > oldMax)
+		memset(&newBuf->glyphs[oldMax], 0, (maxGlyphs-oldMax)*sizeof(C2Di_Glyph));
+
+	newBuf->glyphBufSize = maxGlyphs;
+	return newBuf;
+
 }
 
 void C2D_TextBufDelete(C2D_TextBuf buf)
