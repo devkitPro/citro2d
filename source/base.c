@@ -57,12 +57,22 @@ bool C2D_Init(size_t maxObjects)
 	C3D_ProcTexCombiner(&ctx->ptBlend, true, GPU_PT_U, GPU_PT_V);
 	C3D_ProcTexFilter(&ctx->ptBlend, GPU_PT_LINEAR);
 
+	C3D_ProcTexInit(&ctx->ptCircle, 0, 1);
+	C3D_ProcTexClamp(&ctx->ptCircle, GPU_PT_MIRRORED_REPEAT, GPU_PT_MIRRORED_REPEAT);
+	C3D_ProcTexCombiner(&ctx->ptCircle, true, GPU_PT_SQRT2, GPU_PT_SQRT2);
+	C3D_ProcTexFilter(&ctx->ptCircle, GPU_PT_LINEAR);
+
+
 	// Prepare proctex lut
 	float data[129];
 	int i;
 	for (i = 0; i <= 128; i ++)
 		data[i] = i/128.0f;
 	ProcTexLut_FromArray(&ctx->ptBlendLut, data);
+
+	for (i = 0; i <= 128; i ++)
+		data[i] = (i >= 127) ? 0 : 1;
+	ProcTexLut_FromArray(&ctx->ptCircleLut, data);
 
 	ctx->flags = C2DiF_Active;
 	ctx->vtxBufPos = 0;
@@ -113,16 +123,7 @@ void C2D_Prepare(void)
 	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
 	C3D_TexEnvColor(env, 0xFFFFFFFF);
 
-	// Set texenv1 to blend the output of texenv0 with the primary color
-	// texenv1.rgb = mix(texenv0.rgb, vtx.color.rgb, vtx.blend.y);
-	// texenv1.a   = texenv0.a * vtx.color.a;
-	env = C3D_GetTexEnv(1);
-	C3D_TexEnvInit(env);
-	C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_TEXTURE3);
-	C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
-	C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, 0);
-	C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
-	C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+	//TexEnv1 set afterwards by C2Di_Update()
 
 	/*
 	// Set texenv2 to tint the output of texenv1 with the specified tint
@@ -283,6 +284,8 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
+	C2Di_SetCircle(false);
+
 	C2Di_SetTex(img.tex);
 	C2Di_Update();
 
@@ -317,13 +320,13 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 	const C2D_Tint* tintBotRight = tint ? &tint->corners[C2D_BotRight] : &s_defaultTint;
 
 	// Draw triangles
-	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  tintTopLeft->blend,  tintTopLeft->color);
-	C2Di_AppendVtx(quad.botLeft[0],  quad.botLeft[1],  params->depth, tcBotLeft[0],  tcBotLeft[1],  tintBotLeft->blend,  tintBotLeft->color);
-	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], tintBotRight->blend, tintBotRight->color);
+	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  0, tintTopLeft->blend,  tintTopLeft->color);
+	C2Di_AppendVtx(quad.botLeft[0],  quad.botLeft[1],  params->depth, tcBotLeft[0],  tcBotLeft[1],  0, tintBotLeft->blend,  tintBotLeft->color);
+	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], 0, tintBotRight->blend, tintBotRight->color);
 
-	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  tintTopLeft->blend,  tintTopLeft->color);
-	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], tintBotRight->blend, tintBotRight->color);
-	C2Di_AppendVtx(quad.topRight[0], quad.topRight[1], params->depth, tcTopRight[0], tcTopRight[1], tintTopRight->blend, tintTopRight->color);
+	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  0, tintTopLeft->blend,  tintTopLeft->color);
+	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], 0, tintBotRight->blend, tintBotRight->color);
+	C2Di_AppendVtx(quad.topRight[0], quad.topRight[1], params->depth, tcTopRight[0], tcTopRight[1], 0, tintTopRight->blend, tintTopRight->color);
 
 	return true;
 }
@@ -336,13 +339,15 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 	if (3 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
+	C2Di_SetCircle(false);
+
 	// Not necessary:
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
 
-	C2Di_AppendVtx(x0, y0, depth, -1.0f, -1.0f, 1.0f, clr0);
-	C2Di_AppendVtx(x1, y1, depth, -1.0f, -1.0f, 1.0f, clr1);
-	C2Di_AppendVtx(x2, y2, depth, -1.0f, -1.0f, 1.0f, clr2);
+	C2Di_AppendVtx(x0, y0, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
+	C2Di_AppendVtx(x1, y1, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
+	C2Di_AppendVtx(x2, y2, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr2);
 	return true;
 }
 
@@ -354,21 +359,47 @@ bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u3
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
+	C2Di_SetCircle(false);
+
 	// Not necessary:
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
 
-	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 1.0f, clr0);
-	C2Di_AppendVtx(x,   y+h, z, -1.0f, -1.0f, 1.0f, clr2);
-	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f, 1.0f, clr3);
+	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
+	C2Di_AppendVtx(x,   y+h, z, -1.0f, -1.0f, 0.0f, 1.0f, clr2);
+	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f, 0.0f, 1.0f, clr3);
 
-	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 1.0f, clr0);
-	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f, 1.0f, clr3);
-	C2Di_AppendVtx(x+w, y,   z, -1.0f, -1.0f, 1.0f, clr1);
+	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
+	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f, 0.0f, 1.0f, clr3);
+	C2Di_AppendVtx(x+w, y,   z, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
 	return true;
 }
 
-void C2Di_AppendVtx(float x, float y, float z, float u, float v, float blend, u32 color)
+bool C2D_DrawCircle(float x, float y, float z, float w, float h, u32 clr0, u32 clr1, u32 clr2, u32 clr3)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return false;
+	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
+		return false;
+
+	C2Di_SetCircle(true);
+
+	// Not necessary:
+	//C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_Update();
+
+	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, -1.0f, -1.0f, clr0);
+	C2Di_AppendVtx(x,   y+h, z, -1.0f, -1.0f, -1.0f,  1.0f, clr2);
+	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f,  1.0f,  1.0f, clr3);
+
+	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, -1.0f, -1.0f, clr0);
+	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f,  1.0f,  1.0f, clr3);
+	C2Di_AppendVtx(x+w, y,   z, -1.0f, -1.0f,  1.0f, -1.0f, clr1);
+	return true;
+}
+
+void C2Di_AppendVtx(float x, float y, float z, float u, float v, float ptx, float pty, u32 color)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	C2Di_Vertex* vtx = &ctx->vtxBuf[ctx->vtxBufPos++];
@@ -377,8 +408,8 @@ void C2Di_AppendVtx(float x, float y, float z, float u, float v, float blend, u3
 	vtx->pos[2]      = z;
 	vtx->texcoord[0] = u;
 	vtx->texcoord[1] = v;
-	vtx->blend[0]    = 0.0f; // reserved for future expansion
-	vtx->blend[1]    = blend;
+	vtx->ptcoord[0]  = ptx;
+	vtx->ptcoord[1]  = pty;
 	vtx->color       = color;
 }
 
@@ -409,6 +440,44 @@ void C2Di_Update(void)
 		C3D_TexEnvSrc(C3D_GetTexEnv(0), C3D_Both, (ctx->flags & C2DiF_Src_Tex) ? GPU_TEXTURE0 : GPU_CONSTANT, 0, 0);
 	if (flags & C2DiF_DirtyFade)
 		C3D_TexEnvColor(C3D_GetTexEnv(5), ctx->fadeClr);
+
+	if (flags & C2DiF_DirtyProcTex)
+	{	
+		if (ctx->flags & C2DiF_ProcTex_Circle) //flags variable is only for dirty flags
+		{
+			C3D_ProcTexBind(1, &ctx->ptCircle);
+			C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptCircleLut);
+			
+			//Set TexEnv1 to use proctex to generate a circle.
+			//This circle then either passes through the alpha (if the fragment
+			//is within the circle) or discards the fragment.
+			//Unfortunately, blending the vertex color is not possible
+			//(because proctex is already being used), therefore it is simply multiplied.
+			//texenv1.rgb = texenv0.rgb * vtx.color.rgb;
+			//texenv1.a = texenv0.rgb * proctex.a;
+			C3D_TexEnv* env = C3D_GetTexEnv(1);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, 0);
+			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_TEXTURE3, 0);
+			C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+		}
+		else
+		{
+			C3D_ProcTexBind(1, &ctx->ptBlend);
+			C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptBlendLut);
+
+			// Set texenv1 to blend the output of texenv0 with the primary color
+			// texenv1.rgb = mix(texenv0.rgb, vtx.color.rgb, vtx.blend.y);
+			// texenv1.a   = texenv0.a * vtx.color.a;
+			C3D_TexEnv* env = C3D_GetTexEnv(1);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_TEXTURE3);
+			C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
+			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, 0);
+			C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
+			C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+		}
+	}
 
 	ctx->flags &= ~C2DiF_DirtyAny;
 }

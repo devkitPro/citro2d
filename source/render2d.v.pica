@@ -14,13 +14,14 @@
 .out oPosition  position
 .out oTexCoord0 texcoord0
 .out oTexCoord1 texcoord1
+.out oTexCoord2 texcoord2
 .out oColor     color
 
 ; Inputs
-.in iPosition v0
-.in iTexCoord v1
-.in iBlend    v2
-.in iColor    v3
+.in iPosition      v0
+.in iTexCoord      v1
+.in iProcTexCoord  v2
+.in iColor         v3
 
 ; Main procedure
 .entry render2d_main
@@ -45,7 +46,7 @@
 	mov oTexCoord0, iTexCoord
 
 	; oTexCoord1 = iBlend
-	mov oTexCoord1, iBlend
+	mov oTexCoord1, iProcTexCoord
 
 	; oColor = iColor / 255
 	mul oColor, clrdiv, iColor

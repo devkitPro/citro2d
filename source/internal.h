@@ -5,7 +5,7 @@ typedef struct
 {
 	float pos[3];
 	float texcoord[2];
-	float blend[2];
+	float ptcoord[2];
 	u32 color;
 } C2Di_Vertex;
 
@@ -16,7 +16,9 @@ typedef struct
 	C3D_AttrInfo attrInfo;
 	C3D_BufInfo bufInfo;
 	C3D_ProcTex ptBlend;
+	C3D_ProcTex ptCircle;
 	C3D_ProcTexLut ptBlendLut;
+	C3D_ProcTexLut ptCircleLut;
 	u32 sceneW, sceneH;
 
 	C2Di_Vertex* vtxBuf;
@@ -33,18 +35,21 @@ typedef struct
 
 enum
 {
-	C2DiF_Active    = BIT(0),
-	C2DiF_DirtyProj = BIT(1),
-	C2DiF_DirtyMdlv = BIT(2),
-	C2DiF_DirtyTex  = BIT(3),
-	C2DiF_DirtySrc  = BIT(4),
-	C2DiF_DirtyFade = BIT(5),
+	C2DiF_Active       = BIT(0),
+	C2DiF_DirtyProj    = BIT(1),
+	C2DiF_DirtyMdlv    = BIT(2),
+	C2DiF_DirtyTex     = BIT(3),
+	C2DiF_DirtySrc     = BIT(4),
+	C2DiF_DirtyFade    = BIT(5),
+	C2DiF_DirtyProcTex = BIT(6),
 
 	C2DiF_Src_None  = 0,
 	C2DiF_Src_Tex   = BIT(31),
 	C2DiF_Src_Mask  = BIT(31),
 
-	C2DiF_DirtyAny = C2DiF_DirtyProj | C2DiF_DirtyMdlv | C2DiF_DirtyTex | C2DiF_DirtySrc | C2DiF_DirtyFade,
+	C2DiF_ProcTex_Circle = BIT(30),
+
+	C2DiF_DirtyAny = C2DiF_DirtyProj | C2DiF_DirtyMdlv | C2DiF_DirtyTex | C2DiF_DirtySrc | C2DiF_DirtyFade | C2DiF_DirtyProcTex,
 };
 
 static inline C2Di_Context* C2Di_GetContext(void)
@@ -72,6 +77,22 @@ static inline void C2Di_SetTex(C3D_Tex* tex)
 	}
 }
 
+static inline void C2Di_SetCircle(bool iscircle)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if(iscircle && !(ctx->flags & C2DiF_ProcTex_Circle))
+	{
+		ctx->flags |= C2DiF_DirtyProcTex;
+		ctx->flags |= C2DiF_ProcTex_Circle;
+	}
+	else if(ctx->flags & C2DiF_ProcTex_Circle)
+	{
+		ctx->flags |= C2DiF_DirtyProcTex;
+		ctx->flags &= ~C2DiF_ProcTex_Circle;
+	}
+
+}
+
 typedef struct
 {
 	float topLeft[2];
@@ -81,6 +102,6 @@ typedef struct
 } C2Di_Quad;
 
 void C2Di_CalcQuad(C2Di_Quad* quad, const C2D_DrawParams* params);
-void C2Di_AppendVtx(float x, float y, float z, float u, float v, float blend, u32 color);
+void C2Di_AppendVtx(float x, float y, float z, float u, float v, float ptx, float pty, u32 color);
 void C2Di_FlushVtxBuf(void);
 void C2Di_Update(void);

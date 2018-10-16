@@ -367,4 +367,34 @@ static inline bool C2D_DrawRectSolid(
 	return C2D_DrawRectangle(x,y,z,w,h,clr,clr,clr,clr);
 }
 
+/** @brief Draws a circle using the GPU 
+ *  @param[in] x X coordinate of the top-left vertex of the circle
+ *  @param[in] y Y coordinate of the top-left vertex of the circle
+ *  @param[in] z Z coordinate (depth value) to draw the circle with
+ *  @param[in] w Width of the circle
+ *  @param[in] h Height of the circle
+ *  @param[in] clr0 32-bit RGBA color of the top-left corner of the circle
+ *  @param[in] clr1 32-bit RGBA color of the top-right corner of the circle
+ *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the circle
+ *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the circle
+*/
+bool C2D_DrawCircle(
+	float x, float y, float z, float w, float h, 
+	u32 clr0, u32 clr1, u32 clr2, u32 clr3);
+
+/** @brief Draws a circle using the GPU (with a solid color)
+ *  @param[in] x X coordinate of the top-left vertex of the circle
+ *  @param[in] y Y coordinate of the top-left vertex of the circle
+ *  @param[in] z Z coordinate (depth value) to draw the circle with
+ *  @param[in] w Width of the circle
+ *  @param[in] h Height of the circle
+ *  @param[in] clr 32-bit RGBA color of the top-left corner of the circle
+*/
+static inline bool C2D_DrawCircleSolid(
+	float x, float y, float z, float w, float h, 
+	u32 clr)
+{
+	return C2D_DrawCircle(x,y,z,w,h,clr,clr,clr,clr);
+}
+
 /** @} */
