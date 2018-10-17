@@ -62,7 +62,6 @@ bool C2D_Init(size_t maxObjects)
 	C3D_ProcTexCombiner(&ctx->ptCircle, true, GPU_PT_SQRT2, GPU_PT_SQRT2);
 	C3D_ProcTexFilter(&ctx->ptCircle, GPU_PT_LINEAR);
 
-
 	// Prepare proctex lut
 	float data[129];
 	int i;
@@ -81,7 +80,6 @@ bool C2D_Init(size_t maxObjects)
 	Mtx_Identity(&ctx->mdlvMtx);
 	ctx->fadeClr = 0;
 
-	C3D_FrameEndHook(C2Di_FrameEndHook, NULL);
 	return true;
 }
 
@@ -150,6 +148,9 @@ void C2D_Prepare(void)
 
 	// Don't cull anything
 	C3D_CullFace(GPU_CULL_NONE);
+
+	// Set the frame end hook
+	C3D_FrameEndHook(C2Di_FrameEndHook, NULL);
 }
 
 void C2D_Flush(void)
@@ -285,7 +286,6 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 		return false;
 
 	C2Di_SetCircle(false);
-
 	C2Di_SetTex(img.tex);
 	C2Di_Update();
 
@@ -340,7 +340,6 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 		return false;
 
 	C2Di_SetCircle(false);
-
 	// Not necessary:
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
@@ -360,7 +359,6 @@ bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u3
 		return false;
 
 	C2Di_SetCircle(false);
-
 	// Not necessary:
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
@@ -384,7 +382,6 @@ bool C2D_DrawEllipse(float x, float y, float z, float w, float h, u32 clr0, u32 
 		return false;
 
 	C2Di_SetCircle(true);
-
 	// Not necessary:
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
@@ -443,18 +440,18 @@ void C2Di_Update(void)
 
 	if (flags & C2DiF_DirtyProcTex)
 	{	
-		if (ctx->flags & C2DiF_ProcTex_Circle) //flags variable is only for dirty flags
+		if (ctx->flags & C2DiF_ProcTex_Circle) // flags variable is only for dirty flags
 		{
 			C3D_ProcTexBind(1, &ctx->ptCircle);
 			C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptCircleLut);
 			
-			//Set TexEnv1 to use proctex to generate a circle.
-			//This circle then either passes through the alpha (if the fragment
-			//is within the circle) or discards the fragment.
-			//Unfortunately, blending the vertex color is not possible
-			//(because proctex is already being used), therefore it is simply multiplied.
-			//texenv1.rgb = texenv0.rgb * vtx.color.rgb;
-			//texenv1.a = texenv0.rgb * proctex.a;
+			// Set TexEnv1 to use proctex to generate a circle.
+			// This circle then either passes through the alpha (if the fragment
+			// is within the circle) or discards the fragment.
+			// Unfortunately, blending the vertex color is not possible
+			// (because proctex is already being used), therefore it is simply multiplied.
+			// texenv1.rgb = texenv0.rgb * vtx.color.rgb;
+			// texenv1.a = texenv0.rgb * proctex.a;
 			C3D_TexEnv* env = C3D_GetTexEnv(1);
 			C3D_TexEnvInit(env);
 			C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, 0);
