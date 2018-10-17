@@ -375,7 +375,7 @@ bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u3
 	return true;
 }
 
-bool C2D_DrawCircle(float x, float y, float z, float w, float h, u32 clr0, u32 clr1, u32 clr2, u32 clr3)
+bool C2D_DrawEllipse(float x, float y, float z, float w, float h, u32 clr0, u32 clr1, u32 clr2, u32 clr3)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))

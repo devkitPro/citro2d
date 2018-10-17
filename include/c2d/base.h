@@ -337,6 +337,22 @@ bool C2D_DrawTriangle(
 	float x2, float y2, u32 clr2,
 	float depth);
 
+/** @brief Draws a plain line using the GPU
+ *  @param[in] x0 X coordinate of the first vertex of the line
+ *  @param[in] y0 Y coordinate of the first vertex of the line
+ *  @param[in] clr0 32-bit RGBA color of the first vertex of the line
+ *  @param[in] x1 X coordinate of the second vertex of the line
+ *  @param[in] y1 Y coordinate of the second vertex of the line
+ *  @param[in] clr1 32-bit RGBA color of the second vertex of the line
+ */
+/*static inline bool C2D_DrawLine(
+	float x0, float y0, u32 clr0,
+	float x1, float y1, u32 clr1,
+	float depth)
+{
+	return C2D_DrawTriangle(x0,y0,clr0,x0,y0,clr0,x1,y1,clr1,depth);
+}*/
+
 /** @brief Draws a plain rectangle using the GPU
  *  @param[in] x X coordinate of the top-left vertex of the rectangle
  *  @param[in] y Y coordinate of the top-left vertex of the rectangle
@@ -367,34 +383,69 @@ static inline bool C2D_DrawRectSolid(
 	return C2D_DrawRectangle(x,y,z,w,h,clr,clr,clr,clr);
 }
 
-/** @brief Draws a circle using the GPU 
- *  @param[in] x X coordinate of the top-left vertex of the circle
- *  @param[in] y Y coordinate of the top-left vertex of the circle
- *  @param[in] z Z coordinate (depth value) to draw the circle with
- *  @param[in] w Width of the circle
- *  @param[in] h Height of the circle
- *  @param[in] clr0 32-bit RGBA color of the top-left corner of the circle
- *  @param[in] clr1 32-bit RGBA color of the top-right corner of the circle
- *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the circle
- *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the circle
+/** @brief Draws an ellipse using the GPU 
+ *  @param[in] x X coordinate of the top-left vertex of the ellipse
+ *  @param[in] y Y coordinate of the top-left vertex of the ellipse
+ *  @param[in] z Z coordinate (depth value) to draw the ellipse with
+ *  @param[in] w Width of the ellipse
+ *  @param[in] h Height of the ellipse
+ *  @param[in] clr0 32-bit RGBA color of the top-left corner of the ellipse
+ *  @param[in] clr1 32-bit RGBA color of the top-right corner of the ellipse
+ *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the ellipse
+ *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the ellipse
 */
-bool C2D_DrawCircle(
+bool C2D_DrawEllipse(
 	float x, float y, float z, float w, float h, 
 	u32 clr0, u32 clr1, u32 clr2, u32 clr3);
 
-/** @brief Draws a circle using the GPU (with a solid color)
- *  @param[in] x X coordinate of the top-left vertex of the circle
- *  @param[in] y Y coordinate of the top-left vertex of the circle
- *  @param[in] z Z coordinate (depth value) to draw the circle with
- *  @param[in] w Width of the circle
- *  @param[in] h Height of the circle
- *  @param[in] clr 32-bit RGBA color of the top-left corner of the circle
+/** @brief Draws a ellipse using the GPU (with a solid color)
+ *  @param[in] x X coordinate of the top-left vertex of the ellipse
+ *  @param[in] y Y coordinate of the top-left vertex of the ellipse
+ *  @param[in] z Z coordinate (depth value) to draw the ellipse with
+ *  @param[in] w Width of the ellipse
+ *  @param[in] h Height of the ellipse
+ *  @param[in] clr 32-bit RGBA color of the ellipse
 */
-static inline bool C2D_DrawCircleSolid(
+static inline bool C2D_DrawEllipseSolid(
 	float x, float y, float z, float w, float h, 
 	u32 clr)
 {
-	return C2D_DrawCircle(x,y,z,w,h,clr,clr,clr,clr);
+	return C2D_DrawEllipse(x,y,z,w,h,clr,clr,clr,clr);
 }
 
+/** @brief Draws a circle (an ellipse with identical width and height) using the GPU
+ *  @param[in] x X coordinate of the center of the circle
+ *  @param[in] y Y coordinate of the center of the circle
+ *  @param[in] z Z coordinate (depth value) to draw the ellipse with
+ *  @param[in] radius Radius of the circle
+ *  @param[in] clr0 32-bit RGBA color of the top-left corner of the ellipse
+ *  @param[in] clr1 32-bit RGBA color of the top-right corner of the ellipse
+ *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the ellipse
+ *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the ellipse
+*/
+static inline bool C2D_DrawCircle(
+	float x, float y, float z, float radius,
+	u32 clr0, u32 clr1, u32 clr2, u32 clr3)
+{
+	return C2D_DrawEllipse(
+		x - radius,y - radius,z,radius*2,radius*2,
+		clr0,clr1,clr2,clr3);
+}
+
+/** @brief Draws a circle (an ellipse with identical width and height) using the GPU (with a solid color)
+ *  @param[in] x X coordinate of the center of the circle
+ *  @param[in] y Y coordinate of the center of the circle
+ *  @param[in] z Z coordinate (depth value) to draw the ellipse with
+ *  @param[in] radius Radius of the circle
+ *  @param[in] clr0 32-bit RGBA color of the top-left corner of the ellipse
+ *  @param[in] clr1 32-bit RGBA color of the top-right corner of the ellipse
+ *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the ellipse
+ *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the ellipse
+*/
+static inline bool C2D_DrawCircleSolid(
+	float x, float y, float z, float radius, 
+	u32 clr)
+{
+	return C2D_DrawCircle(x,y,z,radius,clr,clr,clr,clr);
+}
 /** @} */
