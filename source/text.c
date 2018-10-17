@@ -216,7 +216,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 	va_end(va);
 
-	C2Di_SetCircle(false);
+	C2Di_SetProcTexMode(C2DiF_ProcTex_Color_Interpolate);
 
 	for (cur = begin; cur != end; ++cur)
 	{

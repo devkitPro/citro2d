@@ -396,7 +396,7 @@ static inline bool C2D_DrawRectSolid(
 */
 bool C2D_DrawEllipse(
 	float x, float y, float z, float w, float h, 
-	u32 clr0, u32 clr1, u32 clr2, u32 clr3);
+	u32 clr0, u32 clr1, u32 clr2, u32 clr3, bool filled C2D_OPTIONAL(true));
 
 /** @brief Draws a ellipse using the GPU (with a solid color)
  *  @param[in] x X coordinate of the top-left vertex of the ellipse
@@ -408,9 +408,9 @@ bool C2D_DrawEllipse(
 */
 static inline bool C2D_DrawEllipseSolid(
 	float x, float y, float z, float w, float h, 
-	u32 clr)
+	u32 clr, bool filled C2D_OPTIONAL(true))
 {
-	return C2D_DrawEllipse(x,y,z,w,h,clr,clr,clr,clr);
+	return C2D_DrawEllipse(x,y,z,w,h,clr,clr,clr,clr,filled);
 }
 
 /** @brief Draws a circle (an ellipse with identical width and height) using the GPU
@@ -425,11 +425,12 @@ static inline bool C2D_DrawEllipseSolid(
 */
 static inline bool C2D_DrawCircle(
 	float x, float y, float z, float radius,
-	u32 clr0, u32 clr1, u32 clr2, u32 clr3)
+	u32 clr0, u32 clr1, u32 clr2, u32 clr3,
+	bool filled C2D_OPTIONAL(true))
 {
 	return C2D_DrawEllipse(
 		x - radius,y - radius,z,radius*2,radius*2,
-		clr0,clr1,clr2,clr3);
+		clr0,clr1,clr2,clr3,filled);
 }
 
 /** @brief Draws a circle (an ellipse with identical width and height) using the GPU (with a solid color)
@@ -444,8 +445,8 @@ static inline bool C2D_DrawCircle(
 */
 static inline bool C2D_DrawCircleSolid(
 	float x, float y, float z, float radius, 
-	u32 clr)
+	u32 clr, bool filled C2D_OPTIONAL(true))
 {
-	return C2D_DrawCircle(x,y,z,radius,clr,clr,clr,clr);
+	return C2D_DrawCircle(x,y,z,radius,clr,clr,clr,clr,filled);
 }
 /** @} */

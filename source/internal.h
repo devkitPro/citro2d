@@ -19,6 +19,7 @@ typedef struct
 	C3D_ProcTex ptCircle;
 	C3D_ProcTexLut ptBlendLut;
 	C3D_ProcTexLut ptCircleLut;
+	C3D_ProcTexLut ptCircleUnfilledLut;
 	u32 sceneW, sceneH;
 
 	C2Di_Vertex* vtxBuf;
@@ -27,6 +28,7 @@ typedef struct
 	size_t vtxBufLastPos;
 
 	u32 flags;
+	u32 ptmode;
 	C3D_Mtx projMtx;
 	C3D_Mtx mdlvMtx;
 	C3D_Tex* curTex;
@@ -47,9 +49,14 @@ enum
 	C2DiF_Src_Tex   = BIT(31),
 	C2DiF_Src_Mask  = BIT(31),
 
-	C2DiF_ProcTex_Circle = BIT(30),
-
 	C2DiF_DirtyAny = C2DiF_DirtyProj | C2DiF_DirtyMdlv | C2DiF_DirtyTex | C2DiF_DirtySrc | C2DiF_DirtyFade | C2DiF_DirtyProcTex,
+};
+
+enum
+{
+	C2DiF_ProcTex_Color_Interpolate = 0,
+	C2DiF_ProcTex_Circle = 1,
+	C2DiF_ProcTex_Circle_Unfilled = 2,
 };
 
 static inline C2Di_Context* C2Di_GetContext(void)
@@ -77,18 +84,38 @@ static inline void C2Di_SetTex(C3D_Tex* tex)
 	}
 }
 
-static inline void C2Di_SetCircle(bool iscircle)
+static inline void C2Di_SetProcTexMode(u32 proctexmode)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
-	if(iscircle && !(ctx->flags & C2DiF_ProcTex_Circle))
+	switch(proctexmode)
 	{
-		ctx->flags |= C2DiF_DirtyProcTex;
-		ctx->flags |= C2DiF_ProcTex_Circle;
-	}
-	else if(!iscircle && ctx->flags & C2DiF_ProcTex_Circle)
-	{
-		ctx->flags |= C2DiF_DirtyProcTex;
-		ctx->flags &= ~C2DiF_ProcTex_Circle;
+		case C2DiF_ProcTex_Circle:
+		{
+			if(ctx->ptmode != C2DiF_ProcTex_Circle)
+			{
+				ctx->flags |= C2DiF_DirtyProcTex;
+				ctx->ptmode = C2DiF_ProcTex_Circle;
+			}
+			break;
+		}
+		case C2DiF_ProcTex_Circle_Unfilled:
+		{
+			if(ctx->ptmode != C2DiF_ProcTex_Circle_Unfilled)
+			{
+				ctx->flags |= C2DiF_DirtyProcTex;
+				ctx->ptmode = C2DiF_ProcTex_Circle_Unfilled;
+			}
+			break;
+		}
+		case C2DiF_ProcTex_Color_Interpolate:
+		{
+			if(ctx->ptmode != C2DiF_ProcTex_Color_Interpolate)
+			{
+				ctx->flags |= C2DiF_DirtyProcTex;
+				ctx->ptmode = C2DiF_ProcTex_Color_Interpolate;
+			}
+			break;
+		}
 	}
 
 }
