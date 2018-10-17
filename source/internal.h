@@ -85,7 +85,7 @@ static inline void C2Di_SetCircle(bool iscircle)
 		ctx->flags |= C2DiF_DirtyProcTex;
 		ctx->flags |= C2DiF_ProcTex_Circle;
 	}
-	else if(ctx->flags & C2DiF_ProcTex_Circle)
+	else if(!iscircle && ctx->flags & C2DiF_ProcTex_Circle)
 	{
 		ctx->flags |= C2DiF_DirtyProcTex;
 		ctx->flags &= ~C2DiF_ProcTex_Circle;
