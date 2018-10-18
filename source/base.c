@@ -73,10 +73,6 @@ bool C2D_Init(size_t maxObjects)
 		data[i] = (i >= 127) ? 0 : 1;
 	ProcTexLut_FromArray(&ctx->ptCircleLut, data);
 
-	for (i = 0; i <= 128; i ++)
-		data[i] = (i == 126 || i == 125 || i == 124) ? 1 : 0;
-	ProcTexLut_FromArray(&ctx->ptCircleUnfilledLut, data);
-
 	ctx->flags = C2DiF_Active;
 	ctx->vtxBufPos = 0;
 	ctx->vtxBufLastPos = 0;
@@ -289,7 +285,7 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetProcTexMode(C2DiF_ProcTex_Color_Interpolate);
+	C2Di_SetCircle(false);
 	C2Di_SetTex(img.tex);
 	C2Di_Update();
 
@@ -343,7 +339,7 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 	if (3 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetProcTexMode(C2DiF_ProcTex_Color_Interpolate);
+	C2Di_SetCircle(false);
 	// Not necessary:
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
@@ -362,7 +358,7 @@ bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u3
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetProcTexMode(C2DiF_ProcTex_Color_Interpolate);
+	C2Di_SetCircle(false);
 	// Not necessary:
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
@@ -377,7 +373,7 @@ bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u3
 	return true;
 }
 
-bool C2D_DrawEllipse(float x, float y, float z, float w, float h, u32 clr0, u32 clr1, u32 clr2, u32 clr3, bool filled)
+bool C2D_DrawEllipse(float x, float y, float z, float w, float h, u32 clr0, u32 clr1, u32 clr2, u32 clr3)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
@@ -385,7 +381,7 @@ bool C2D_DrawEllipse(float x, float y, float z, float w, float h, u32 clr0, u32 
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetProcTexMode(filled ? C2DiF_ProcTex_Circle : C2DiF_ProcTex_Circle_Unfilled);
+	C2Di_SetCircle(true);
 	// Not necessary:
 	//C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
@@ -444,7 +440,7 @@ void C2Di_Update(void)
 
 	if (flags & C2DiF_DirtyProcTex)
 	{	
-		if (ctx->ptmode == C2DiF_ProcTex_Circle)
+		if (ctx->flags & C2DiF_ProcTex_Circle) // flags variable is only for dirty flags
 		{
 			C3D_ProcTexBind(1, &ctx->ptCircle);
 			C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptCircleLut);
@@ -452,26 +448,6 @@ void C2Di_Update(void)
 			// Set TexEnv1 to use proctex to generate a circle.
 			// This circle then either passes through the alpha (if the fragment
 			// is within the circle) or discards the fragment.
-			// Unfortunately, blending the vertex color is not possible
-			// (because proctex is already being used), therefore it is simply multiplied.
-			// texenv1.rgb = texenv0.rgb * vtx.color.rgb;
-			// texenv1.a = texenv0.rgb * proctex.a;
-			C3D_TexEnv* env = C3D_GetTexEnv(1);
-			C3D_TexEnvInit(env);
-			C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, 0);
-			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_TEXTURE3, 0);
-			C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-		}
-		else if (ctx->ptmode == C2DiF_ProcTex_Circle_Unfilled)
-		{
-			// Same code as above, but, the LUT is set differently-
-			// it is now configured to pass through the outer edge of the circle.
-			C3D_ProcTexBind(1, &ctx->ptCircle);
-			C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptCircleUnfilledLut);
-			
-			// Set TexEnv1 to use proctex to generate a circle.
-			// This circle then either passes through the alpha (if the fragment
-			// is within the rim of the circle) or discards the fragment.
 			// Unfortunately, blending the vertex color is not possible
 			// (because proctex is already being used), therefore it is simply multiplied.
 			// texenv1.rgb = texenv0.rgb * vtx.color.rgb;
