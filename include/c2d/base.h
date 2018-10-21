@@ -337,22 +337,6 @@ bool C2D_DrawTriangle(
 	float x2, float y2, u32 clr2,
 	float depth);
 
-/** @brief Draws a plain line using the GPU
- *  @param[in] x0 X coordinate of the first vertex of the line
- *  @param[in] y0 Y coordinate of the first vertex of the line
- *  @param[in] clr0 32-bit RGBA color of the first vertex of the line
- *  @param[in] x1 X coordinate of the second vertex of the line
- *  @param[in] y1 Y coordinate of the second vertex of the line
- *  @param[in] clr1 32-bit RGBA color of the second vertex of the line
- */
-/*static inline bool C2D_DrawLine(
-	float x0, float y0, u32 clr0,
-	float x1, float y1, u32 clr1,
-	float depth)
-{
-	return C2D_DrawTriangle(x0,y0,clr0,x0,y0,clr0,x1,y1,clr1,depth);
-}*/
-
 /** @brief Draws a plain rectangle using the GPU
  *  @param[in] x X coordinate of the top-left vertex of the rectangle
  *  @param[in] y Y coordinate of the top-left vertex of the rectangle

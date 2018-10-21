@@ -80,12 +80,12 @@ static inline void C2Di_SetTex(C3D_Tex* tex)
 static inline void C2Di_SetCircle(bool iscircle)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
-	if(iscircle && !(ctx->flags & C2DiF_ProcTex_Circle))
+	if (iscircle && !(ctx->flags & C2DiF_ProcTex_Circle))
 	{
 		ctx->flags |= C2DiF_DirtyProcTex;
 		ctx->flags |= C2DiF_ProcTex_Circle;
 	}
-	else if(!iscircle && ctx->flags & C2DiF_ProcTex_Circle)
+	else if (!iscircle && (ctx->flags & C2DiF_ProcTex_Circle))
 	{
 		ctx->flags |= C2DiF_DirtyProcTex;
 		ctx->flags &= ~C2DiF_ProcTex_Circle;

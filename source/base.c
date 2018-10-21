@@ -80,6 +80,7 @@ bool C2D_Init(size_t maxObjects)
 	Mtx_Identity(&ctx->mdlvMtx);
 	ctx->fadeClr = 0;
 
+	C3D_FrameEndHook(C2Di_FrameEndHook, NULL);
 	return true;
 }
 
@@ -148,9 +149,6 @@ void C2D_Prepare(void)
 
 	// Don't cull anything
 	C3D_CullFace(GPU_CULL_NONE);
-
-	// Set the frame end hook
-	C3D_FrameEndHook(C2Di_FrameEndHook, NULL);
 }
 
 void C2D_Flush(void)
