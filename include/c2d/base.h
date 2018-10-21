@@ -377,6 +377,7 @@ static inline bool C2D_DrawRectSolid(
  *  @param[in] clr1 32-bit RGBA color of the top-right corner of the ellipse
  *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the ellipse
  *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the ellipse
+ *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
 */
 bool C2D_DrawEllipse(
 	float x, float y, float z, float w, float h, 
@@ -389,6 +390,7 @@ bool C2D_DrawEllipse(
  *  @param[in] w Width of the ellipse
  *  @param[in] h Height of the ellipse
  *  @param[in] clr 32-bit RGBA color of the ellipse
+ *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
 */
 static inline bool C2D_DrawEllipseSolid(
 	float x, float y, float z, float w, float h, 
@@ -406,6 +408,7 @@ static inline bool C2D_DrawEllipseSolid(
  *  @param[in] clr1 32-bit RGBA color of the top-right corner of the ellipse
  *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the ellipse
  *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the ellipse
+ *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
 */
 static inline bool C2D_DrawCircle(
 	float x, float y, float z, float radius,
@@ -425,6 +428,7 @@ static inline bool C2D_DrawCircle(
  *  @param[in] clr1 32-bit RGBA color of the top-right corner of the ellipse
  *  @param[in] clr2 32-bit RGBA color of the bottom-left corner of the ellipse
  *  @param[in] clr3 32-bit RGBA color of the bottom-right corner of the ellipse
+ *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
 */
 static inline bool C2D_DrawCircleSolid(
 	float x, float y, float z, float radius, 
