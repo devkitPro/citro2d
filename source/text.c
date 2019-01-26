@@ -117,7 +117,13 @@ size_t C2D_TextBufGetNumGlyphs(C2D_TextBuf buf)
 
 const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, u32 lineNo)
 {
+	return C2D_TextFontParseLine(text, NULL, buf, str, lineNo);
+}
+
+const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf, const char* str, u32 lineNo)
+{
 	const uint8_t* p = (const uint8_t*)str;
+	text->font = font;
 	text->buf   = buf;
 	text->begin = buf->glyphCount;
 	text->width = 0.0f;
@@ -134,11 +140,14 @@ const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, 
 		p += units;
 
 		fontGlyphPos_s glyphData;
-		fontCalcGlyphPos(&glyphData, fontGlyphIndexFromCodePoint(code), 0, 1.0f, 1.0f);
+		C2D_FontCalcGlyphPos(font, &glyphData, C2D_FontGlyphIndexFromCodePoint(font, code), 0, 1.0f, 1.0f);
 		if (glyphData.width > 0.0f)
 		{
 			C2Di_Glyph* glyph      = &buf->glyphs[buf->glyphCount++];
-			glyph->sheet           = &s_glyphSheets[glyphData.sheetIndex];
+			if (font)
+				glyph->sheet = &font->glyphSheets[glyphData.sheetIndex];
+			else
+				glyph->sheet           = &s_glyphSheets[glyphData.sheetIndex];
 			glyph->xPos            = text->width + glyphData.xOffset;
 			glyph->lineNo          = lineNo;
 			glyph->width           = glyphData.width;
@@ -157,7 +166,13 @@ const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, 
 
 const char* C2D_TextParse(C2D_Text* text, C2D_TextBuf buf, const char* str)
 {
+	return C2D_TextFontParse(text, NULL, buf, str);
+}
+
+const char* C2D_TextFontParse(C2D_Text* text, C2D_Font font, C2D_TextBuf buf, const char* str)
+{
 	u32 lineNo  = 0;
+	text->font  = font;
 	text->buf   = buf;
 	text->begin = buf->glyphCount;
 	text->width = 0.0f;
@@ -165,7 +180,7 @@ const char* C2D_TextParse(C2D_Text* text, C2D_TextBuf buf, const char* str)
 	for (;;)
 	{
 		C2D_Text temp;
-		str = C2D_TextParseLine(&temp, buf, str, lineNo++);
+		str = C2D_TextFontParseLine(&temp, font, buf, str, lineNo++);
 		if (temp.width > text->width)
 			text->width = temp.width;
 		if (!str || *str != '\n')
@@ -189,7 +204,12 @@ void C2D_TextGetDimensions(const C2D_Text* text, float scaleX, float scaleY, flo
 	if (outWidth)
 		*outWidth  = scaleX*text->width;
 	if (outHeight)
-		*outHeight = ceilf(scaleY*s_textScale*fontGetInfo()->lineFeed)*text->lines;
+	{
+		if (text->font)
+			*outHeight = ceilf(scaleY*text->font->textScale*text->font->cfnt->finf.lineFeed)*text->lines;
+		else
+			*outHeight = ceilf(scaleY*s_textScale*fontGetInfo()->lineFeed)*text->lines;
+	}
 }
 
 void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, float scaleX, float scaleY, ...)
@@ -202,15 +222,30 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	scaleY *= s_textScale;
 
 	float glyphZ = z;
-	float glyphH = scaleY*fontGetGlyphInfo()->cellHeight;
-	float dispY = ceilf(scaleY*fontGetInfo()->lineFeed);
+	float glyphH;
+	float dispY;
+	if (text->font)
+	{
+		glyphH = scaleY*text->font->cfnt->finf.tglp->cellHeight;
+		dispY = ceilf(scaleY*text->font->cfnt->finf.lineFeed);
+	}
+	else
+	{
+		glyphH = scaleY*fontGetGlyphInfo()->cellHeight;
+		dispY = ceilf(scaleY*fontGetInfo()->lineFeed);
+	}
 	u32 color = 0xFF000000;
 
 	va_list va;
 	va_start(va, scaleY);
 
 	if (flags & C2D_AtBaseline)
-		y -= scaleY*fontGetGlyphInfo()->baselinePos;
+	{
+		if (text->font)
+			y -= scaleY*text->font->cfnt->finf.tglp->baselinePos;
+		else
+			y -= scaleY*fontGetGlyphInfo()->baselinePos;
+	}
 	if (flags & C2D_WithColor)
 		color = va_arg(va, u32);
 
