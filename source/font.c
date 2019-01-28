@@ -116,6 +116,110 @@ C2D_Font C2D_FontLoadFromHandle(FILE* handle)
     return font;
 }
 
+C2D_Font C2Di_loadFont(u64 binary_lowpath)
+{
+    C2D_Font font = C2Di_FontAlloc();
+    if (font)
+    {
+        int fontNum = (binary_lowpath & 0x300) >> 8;
+        const u8 sizeMod = fontNum == 0 ? 0xA0 : 0xB0;
+        u64 lowPath[] = { binary_lowpath, 0x00000001FFFFFE00 };
+        Handle romfs_handle;
+        u64    romfs_size        = 0;
+        u32    romfs_bytes_read  = 0;
+    
+        FS_Path    savedatacheck_path       = { PATH_BINARY, 16, (u8*)lowPath };
+        u8         file_binary_lowpath[20]  = {};
+        FS_Path    romfs_path               = { PATH_BINARY, 20, file_binary_lowpath };
+    
+        if (R_FAILED(FSUSER_OpenFileDirectly(&romfs_handle, (FS_ArchiveID)0x2345678a, savedatacheck_path, romfs_path, FS_OPEN_READ, 0)))
+        {
+            free(font);
+            return NULL;
+        }
+        if (R_FAILED(FSFILE_GetSize(romfs_handle, &romfs_size)))
+        {
+            free(font);
+            FSFILE_Close(romfs_handle);
+            return NULL;
+        }
+    
+        u8* romfs_data_buffer = malloc(romfs_size);
+        if (!romfs_data_buffer)
+        {
+            free(font);
+            FSFILE_Close(romfs_handle);
+            return NULL;
+        }
+        if (R_FAILED(FSFILE_Read(romfs_handle, &romfs_bytes_read, 0, romfs_data_buffer, romfs_size)))
+        {
+            free(romfs_data_buffer);
+            free(font);
+            FSFILE_Close(romfs_handle);
+            return NULL;
+        }
+        FSFILE_Close(romfs_handle);
+    
+        u8* compFontData = romfs_data_buffer + sizeMod;
+    
+        u32 fontSize = *(u32*)(compFontData) >> 8;
+        font->cfnt = linearAlloc(fontSize);
+        if (font->cfnt)
+        {
+            if (!decompress_LZ11(font->cfnt, fontSize, NULL, compFontData + 4, romfs_size - sizeMod - 4))
+            {
+                C2D_FontFree(font);
+                return NULL;
+            }
+        }
+
+        free(romfs_data_buffer);
+
+        font = C2Di_PostLoadFont(font);
+    }
+
+    return font;
+}
+
+C2D_Font C2D_FontLoadFromSystem(CFG_Region region)
+{
+    u8 systemRegion;
+    if (R_FAILED(CFGU_SecureInfoGetRegion(&systemRegion)))
+        return NULL;
+
+    switch (region)
+    {
+        case 0:
+        case 1:
+        case 2:
+        case 3:
+            if (systemRegion > 3)
+            {
+                return C2Di_loadFont(0x0004009b00014002);
+            }
+            break;
+        case 4:
+            if (systemRegion == 4)
+            {
+                break;
+            }
+            return C2Di_loadFont(0x0004009b00014102);
+        case 5:
+            if (systemRegion == 5)
+            {
+                break;
+            }
+            return C2Di_loadFont(0x0004009b00014202);
+        case 6:
+            if (systemRegion == 6)
+            {
+                break;
+            }
+            return C2Di_loadFont(0x0004009b00014302);
+    }
+    return NULL;
+}
+
 void C2D_FontFree(C2D_Font font)
 {
     if (font)

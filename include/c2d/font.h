@@ -47,6 +47,14 @@ C2D_Font C2D_FontLoadFromFD(int fd);
  */
 C2D_Font C2D_FontLoadFromHandle(FILE* f);
 
+/** @brief Load corresponding font from system archive
+ *  @param[in] region Region to get font from
+ *  @returns Font handle
+ *  @retval NULL Error
+ *  @remark JPN, USA, EUR, and AUS all use the same font.
+ */
+C2D_Font C2D_FontLoadFromSystem(CFG_Region region);
+
 /** @brief Free a font
  * @param[in] font Font handle
  */
