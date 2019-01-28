@@ -49,7 +49,7 @@ static inline C2D_Font C2Di_PostLoadFont(C2D_Font font)
         for (i = 0; i < glyphInfo->nSheets; i++)
         {
             C3D_Tex* tex = &font->glyphSheets[i];
-            tex->data = glyphInfo->sheetData + glyphInfo->sheetSize * i;
+            tex->data = &glyphInfo->sheetData[glyphInfo->sheetSize*i];
             tex->fmt = glyphInfo->sheetFmt;
             tex->size = glyphInfo->sheetSize;
             tex->width = glyphInfo->sheetWidth;
@@ -59,6 +59,8 @@ static inline C2D_Font C2Di_PostLoadFont(C2D_Font font)
             tex->border = 0xFFFFFFFF;
             tex->lodParam = 0;
         }
+
+        font->charPerSheet = glyphInfo->nRows * glyphInfo->nLines;
     }
     return font;
 }
