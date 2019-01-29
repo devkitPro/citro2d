@@ -225,7 +225,7 @@ void C2D_FontFree(C2D_Font font)
     if (font)
     {
         if (font->cfnt)
-            free(font->cfnt);
+            linearFree(font->cfnt);
         free(font->glyphSheets);
     }
 }
