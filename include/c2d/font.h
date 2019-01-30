@@ -9,7 +9,6 @@ struct C2D_Font_s
 {
     CFNT_s* cfnt;
     C3D_Tex* glyphSheets;
-    int charPerSheet;
     float textScale;
 };
 typedef struct C2D_Font_s* C2D_Font;

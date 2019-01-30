@@ -52,7 +52,8 @@ static void C2Di_TextEnsureLoad(void)
 		svcBreak(USERBREAK_PANIC);
 
 	// Load the glyph texture sheets
-	TGLP_s* glyphInfo = fontGetGlyphInfo();
+	CFNT_s* font = fontGetSystemFont();
+	TGLP_s* glyphInfo = fontGetGlyphInfo(font);
 	s_glyphSheets = malloc(sizeof(C3D_Tex)*glyphInfo->nSheets);
 	s_textScale = 30.0f / glyphInfo->cellHeight;
 	if (!s_glyphSheets)
@@ -62,7 +63,7 @@ static void C2Di_TextEnsureLoad(void)
 	for (i = 0; i < glyphInfo->nSheets; i ++)
 	{
 		C3D_Tex* tex = &s_glyphSheets[i];
-		tex->data = fontGetGlyphSheetTex(i);
+		tex->data = fontGetGlyphSheetTex(font, i);
 		tex->fmt = glyphInfo->sheetFmt;
 		tex->size = glyphInfo->sheetSize;
 		tex->width = glyphInfo->sheetWidth;
@@ -208,7 +209,7 @@ void C2D_TextGetDimensions(const C2D_Text* text, float scaleX, float scaleY, flo
 		if (text->font)
 			*outHeight = ceilf(scaleY*text->font->textScale*text->font->cfnt->finf.lineFeed)*text->lines;
 		else
-			*outHeight = ceilf(scaleY*s_textScale*fontGetInfo()->lineFeed)*text->lines;
+			*outHeight = ceilf(scaleY*s_textScale*fontGetInfo(fontGetSystemFont())->lineFeed)*text->lines;
 	}
 }
 
@@ -217,6 +218,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	C2Di_Glyph* begin = &text->buf->glyphs[text->begin];
 	C2Di_Glyph* end   = &text->buf->glyphs[text->end];
 	C2Di_Glyph* cur;
+	CFNT_s* systemFont = fontGetSystemFont();
 
 	scaleX *= s_textScale;
 	scaleY *= s_textScale;
@@ -231,8 +233,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	}
 	else
 	{
-		glyphH = scaleY*fontGetGlyphInfo()->cellHeight;
-		dispY = ceilf(scaleY*fontGetInfo()->lineFeed);
+		glyphH = scaleY*fontGetGlyphInfo(systemFont)->cellHeight;
+		dispY = ceilf(scaleY*fontGetInfo(systemFont)->lineFeed);
 	}
 	u32 color = 0xFF000000;
 
@@ -244,7 +246,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		if (text->font)
 			y -= scaleY*text->font->cfnt->finf.tglp->baselinePos;
 		else
-			y -= scaleY*fontGetGlyphInfo()->baselinePos;
+			y -= scaleY*fontGetGlyphInfo(systemFont)->baselinePos;
 	}
 	if (flags & C2D_WithColor)
 		color = va_arg(va, u32);

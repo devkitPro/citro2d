@@ -26,24 +26,16 @@ static inline C2D_Font C2Di_PostLoadFont(C2D_Font font)
         font = NULL;
     } else
     {
-        font->cfnt->finf.tglp = (TGLP_s*)((u32)(font->cfnt->finf.tglp) + (u32) font->cfnt);
-        font->cfnt->finf.tglp->sheetData = (u8*)((u32)(font->cfnt->finf.tglp->sheetData) + (u32) font->cfnt);
-
-        font->cfnt->finf.cmap = (CMAP_s*)((u32)(font->cfnt->finf.cmap) + (u32) font->cfnt);
-        CMAP_s* cmap = font->cfnt->finf.cmap;
-        for (; cmap->next; cmap = cmap->next)
-            cmap->next = (CMAP_s*)((u32)(cmap->next) + (u32) font->cfnt);
-
-        font->cfnt->finf.cwdh = (CWDH_s*)((u32)(font->cfnt->finf.cwdh) + (u32) font->cfnt);
-        CWDH_s* cwdh = font->cfnt->finf.cwdh;
-        for (; cwdh->next; cwdh = cwdh->next)
-            cwdh->next = (CWDH_s*)((u32)(cwdh->next) + (u32) font->cfnt);
+        fontFixPointers(font->cfnt);
 
         TGLP_s* glyphInfo = font->cfnt->finf.tglp;
         font->glyphSheets = malloc(sizeof(C3D_Tex)*glyphInfo->nSheets);
         font->textScale = 30.0f / glyphInfo->cellHeight;
         if (!font->glyphSheets)
-            svcBreak(USERBREAK_PANIC);
+        {
+            C2D_FontFree(font);
+            return NULL;
+        }
 
         int i;
         for (i = 0; i < glyphInfo->nSheets; i++)
@@ -59,8 +51,6 @@ static inline C2D_Font C2Di_PostLoadFont(C2D_Font font)
             tex->border = 0xFFFFFFFF;
             tex->lodParam = 0;
         }
-
-        font->charPerSheet = glyphInfo->nRows * glyphInfo->nLines;
     }
     return font;
 }
@@ -233,108 +223,23 @@ void C2D_FontFree(C2D_Font font)
 int C2D_FontGlyphIndexFromCodePoint(C2D_Font font, u32 codepoint)
 {
     if (!font)
-        return fontGlyphIndexFromCodePoint(codepoint);
-
-    int ret = font->cfnt->finf.alterCharIndex;
-    if (codepoint < 0x10000)
-    {
-        CMAP_s* cmap;
-        for (cmap = font->cfnt->finf.cmap; cmap; cmap = cmap->next)
-        {
-            if (codepoint < cmap->codeBegin || codepoint > cmap->codeEnd)
-                continue;
-
-            if (cmap->mappingMethod == CMAP_TYPE_DIRECT)
-            {
-                ret = cmap->indexOffset + (codepoint - cmap->codeBegin);
-                break;
-            }
-
-            if (cmap->mappingMethod == CMAP_TYPE_TABLE)
-            {
-                ret = cmap->indexTable[codepoint - cmap->codeBegin];
-                break;
-            }
-
-            int j;
-            for (j = 0; j < cmap->nScanEntries; j++)
-                if (cmap->scanEntries[j].code == codepoint)
-                    break;
-            if (j < cmap->nScanEntries)
-            {
-                ret = cmap->scanEntries[j].glyphIndex;
-                break;
-            }
-        }
-    }
-    return ret;
+        return fontGlyphIndexFromCodePoint(fontGetSystemFont(), codepoint);
+    else
+        return fontGlyphIndexFromCodePoint(font->cfnt, codepoint);
 }
 
 charWidthInfo_s* C2D_FontGetCharWidthInfo(C2D_Font font, int glyphIndex)
 {
     if (!font)
-        return fontGetCharWidthInfo(glyphIndex);
-    
-    charWidthInfo_s* info = NULL;
-    CWDH_s* cwdh;
-    for (cwdh = font->cfnt->finf.cwdh; cwdh && !info; cwdh = cwdh->next)
-    {
-        if (glyphIndex < cwdh->startIndex || glyphIndex > cwdh->endIndex)
-            continue;
-        info = &cwdh->widths[glyphIndex - cwdh->startIndex];
-    }
-    if (!info)
-        info = &font->cfnt->finf.defaultWidth;
-    return info;
+        return fontGetCharWidthInfo(fontGetSystemFont(), glyphIndex);
+    else
+        return fontGetCharWidthInfo(font->cfnt, glyphIndex);
 }
 
 void C2D_FontCalcGlyphPos(C2D_Font font, fontGlyphPos_s* out, int glyphIndex, u32 flags, float scaleX, float scaleY)
 {
     if (!font)
-        return fontCalcGlyphPos(out, glyphIndex, flags, scaleX, scaleY);
-    FINF_s* finf = &font->cfnt->finf;
-    TGLP_s* tglp = finf->tglp;
-    charWidthInfo_s* cwi = C2D_FontGetCharWidthInfo(font, glyphIndex);
-
-    int sheetId = glyphIndex / font->charPerSheet;
-    int glInSheet = glyphIndex % font->charPerSheet;
-    out->sheetIndex = sheetId;
-    out->xOffset = scaleX*cwi->left;
-    out->xAdvance = scaleX*cwi->charWidth;
-    out->width = scaleX*cwi->glyphWidth;
-
-    int lineId = glInSheet / tglp->nRows;
-    int rowId = glInSheet % tglp->nRows;
-
-    float tx = (float)(rowId*(tglp->cellWidth+1)+1) / tglp->sheetWidth;
-    float ty = 1.0f - (float)(lineId*(tglp->cellHeight+1)+1) / tglp->sheetHeight;
-    float tw = (float)cwi->glyphWidth / tglp->sheetWidth;
-    float th = (float)tglp->cellHeight / tglp->sheetHeight;
-    out->texcoord.left = tx;
-    out->texcoord.top = ty;
-    out->texcoord.right = tx+tw;
-    out->texcoord.bottom = ty-th;
-
-    if (flags & GLYPH_POS_CALC_VTXCOORD)
-    {
-        float vx = out->xOffset;
-        float vy = (flags & GLYPH_POS_AT_BASELINE) ? (scaleY*tglp->baselinePos) : 0;
-        float vw = out->width;
-        float vh = scaleY*tglp->cellHeight;
-        if (flags & GLYPH_POS_Y_POINTS_UP)
-        {
-            vy = -(vh-vy);
-            out->vtxcoord.left = vx;
-            out->vtxcoord.top = vy+vh;
-            out->vtxcoord.right = vx+vw;
-            out->vtxcoord.bottom = vy;
-        } else
-        {
-            vy = -vy;
-            out->vtxcoord.left = vx;
-            out->vtxcoord.top = vy;
-            out->vtxcoord.right = vx+vh;
-            out->vtxcoord.bottom = vy+vh;
-        }
-    }
+        fontCalcGlyphPos(out, fontGetSystemFont(), glyphIndex, flags, scaleX, scaleY);
+    else
+        fontCalcGlyphPos(out, font->cfnt, glyphIndex, flags, scaleX, scaleY);
 }
