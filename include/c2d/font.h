@@ -52,7 +52,7 @@ C2D_Font C2D_FontLoadFromHandle(FILE* f);
  *  @retval NULL Error
  *  @remark JPN, USA, EUR, and AUS all use the same font.
  */
-C2D_Font C2D_FontLoadFromSystem(CFG_Region region);
+C2D_Font C2D_FontLoadSystem(CFG_Region region);
 
 /** @brief Free a font
  * @param[in] font Font handle

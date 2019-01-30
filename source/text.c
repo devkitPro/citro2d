@@ -124,7 +124,7 @@ const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, 
 const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf, const char* str, u32 lineNo)
 {
 	const uint8_t* p = (const uint8_t*)str;
-	text->font = font;
+	text->font  = font;
 	text->buf   = buf;
 	text->begin = buf->glyphCount;
 	text->width = 0.0f;
