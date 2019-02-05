@@ -18,7 +18,7 @@ static inline C2D_Font C2Di_FontAlloc(void)
 	return (C2D_Font)malloc(sizeof(struct C2D_Font_s));
 }
 
-static inline C2D_Font C2Di_PostLoadFont(C2D_Font font)
+static C2D_Font C2Di_PostLoadFont(C2D_Font font)
 {
 	if (!font->cfnt)
 	{
@@ -113,12 +113,12 @@ static C2D_Font C2Di_FontLoadFromArchive(u64 binary_lowpath)
 		const u8 sizeMod = fontNum == 0 ? 0xA0 : 0xB0;
 		u64 lowPath[] = { binary_lowpath, 0x00000001FFFFFE00 };
 		Handle romfs_handle;
-		u64	romfs_size		= 0;
-		u32	romfs_bytes_read  = 0;
+		u64	romfs_size = 0;
+		u32	romfs_bytes_read = 0;
 	
-		FS_Path	savedatacheck_path	   = { PATH_BINARY, 16, (u8*)lowPath };
-		u8		 file_binary_lowpath[20]  = {};
-		FS_Path	romfs_path			   = { PATH_BINARY, 20, file_binary_lowpath };
+		FS_Path	savedatacheck_path = { PATH_BINARY, 16, (u8*)lowPath };
+		u8 file_binary_lowpath[20] = {};
+		FS_Path	romfs_path = { PATH_BINARY, 20, file_binary_lowpath };
 	
 		if (R_FAILED(FSUSER_OpenFileDirectly(&romfs_handle, (FS_ArchiveID)0x2345678a, savedatacheck_path, romfs_path, FS_OPEN_READ, 0)))
 		{
@@ -153,11 +153,13 @@ static C2D_Font C2Di_FontLoadFromArchive(u64 binary_lowpath)
 		u32 fontSize = *(u32*)(compFontData) >> 8;
 		font->cfnt = linearAlloc(fontSize);
 		if (font->cfnt)
+		{
 			if (!decompress_LZ11(font->cfnt, fontSize, NULL, compFontData + 4, romfs_size - sizeMod - 4))
 			{
 				C2D_FontFree(font);
 				return NULL;
 			}
+		}
 
 		free(romfs_data_buffer);
 

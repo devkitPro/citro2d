@@ -144,11 +144,11 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 		C2D_FontCalcGlyphPos(font, &glyphData, C2D_FontGlyphIndexFromCodePoint(font, code), 0, 1.0f, 1.0f);
 		if (glyphData.width > 0.0f)
 		{
-			C2Di_Glyph* glyph      = &buf->glyphs[buf->glyphCount++];
+			C2Di_Glyph* glyph = &buf->glyphs[buf->glyphCount++];
 			if (font)
 				glyph->sheet = &font->glyphSheets[glyphData.sheetIndex];
 			else
-				glyph->sheet           = &s_glyphSheets[glyphData.sheetIndex];
+				glyph->sheet = &s_glyphSheets[glyphData.sheetIndex];
 			glyph->xPos            = text->width + glyphData.xOffset;
 			glyph->lineNo          = lineNo;
 			glyph->width           = glyphData.width;
@@ -230,8 +230,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	{
 		glyphH = scaleY*text->font->cfnt->finf.tglp->cellHeight;
 		dispY = ceilf(scaleY*text->font->cfnt->finf.lineFeed);
-	}
-	else
+	} else
 	{
 		glyphH = scaleY*fontGetGlyphInfo(systemFont)->cellHeight;
 		dispY = ceilf(scaleY*fontGetInfo(systemFont)->lineFeed);
