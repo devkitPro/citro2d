@@ -52,6 +52,13 @@ enum
 	C2DiF_DirtyAny = C2DiF_DirtyProj | C2DiF_DirtyMdlv | C2DiF_DirtyTex | C2DiF_DirtySrc | C2DiF_DirtyFade | C2DiF_DirtyProcTex,
 };
 
+struct C2D_Font_s
+{
+	CFNT_s* cfnt;
+	C3D_Tex* glyphSheets;
+	float textScale;
+};
+
 static inline C2Di_Context* C2Di_GetContext(void)
 {
 	extern C2Di_Context __C2Di_Context;

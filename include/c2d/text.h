@@ -4,6 +4,7 @@
  */
 #pragma once
 #include "base.h"
+#include "font.h"
 
 struct C2D_TextBuf_s;
 typedef struct C2D_TextBuf_s* C2D_TextBuf;
@@ -20,6 +21,7 @@ typedef struct
 	size_t      end;   ///< Reserved for internal use.
 	float       width; ///< Width of the text in pixels, according to 1x scale metrics.
 	u32         lines; ///< Number of lines in the text, according to 1x scale metrics;
+	C2D_Font    font;  ///< Font used to draw the text, or NULL for system font
 } C2D_Text;
 
 enum
@@ -74,6 +76,21 @@ size_t C2D_TextBufGetNumGlyphs(C2D_TextBuf buf);
  */
 const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, u32 lineNo);
 
+/** @brief Parses and adds a single line of text to a text buffer.
+ *  @param[out] text Pointer to text object to store information in.
+ *  @param[in] font Font to get glyphs from, or null for system font
+ *  @param[in] buf Text buffer handle.
+ *  @param[in] str String to parse.
+ *  @param[in] lineNo Line number assigned to the text (used to calculate vertical position).
+ *  @remarks Whitespace doesn't add any glyphs to the text buffer and is thus "free".
+ *  @returns On success, a pointer to the character on which string processing stopped, which
+ *           can be a newline ('\n'; indicating that's where the line ended), the null character
+ *           ('\0'; indicating the end of the string was reached), or any other character
+ *           (indicating the text buffer is full and no more glyphs can be added).
+ *           On failure, NULL.
+ */
+const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf, const char* str, u32 lineNo);
+
 /** @brief Parses and adds arbitrary text (including newlines) to a text buffer.
  *  @param[out] text Pointer to text object to store information in.
  *  @param[in] buf Text buffer handle.
@@ -85,6 +102,19 @@ const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, 
  *           On failure, NULL.
  */
 const char* C2D_TextParse(C2D_Text* text, C2D_TextBuf buf, const char* str);
+
+/** @brief Parses and adds arbitrary text (including newlines) to a text buffer.
+ *  @param[out] text Pointer to text object to store information in.
+ *  @param[in] font Font to get glyphs from, or null for system font
+ *  @param[in] buf Text buffer handle.
+ *  @param[in] str String to parse.
+ *  @remarks Whitespace doesn't add any glyphs to the text buffer and is thus "free".
+ *  @returns On success, a pointer to the character on which string processing stopped, which
+ *           can be the null character ('\0'; indicating the end of the string was reached),
+ *           or any other character (indicating the text buffer is full and no more glyphs can be added).
+ *           On failure, NULL.
+ */
+const char* C2D_TextFontParse(C2D_Text* text, C2D_Font font, C2D_TextBuf buf, const char* str);
 
 /** @brief Optimizes a text object in order to be drawn more efficiently.
  *  @param[in] text Pointer to text object.
