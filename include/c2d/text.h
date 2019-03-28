@@ -21,7 +21,7 @@ typedef struct
 	size_t      end;   ///< Reserved for internal use.
 	float       width; ///< Width of the text in pixels, according to 1x scale metrics.
 	u32         lines; ///< Number of lines in the text, according to 1x scale metrics;
-	C2D_Font    font;  ///< Font of the text, or NULL for system font
+	C2D_Font    font;  ///< Font used to draw the text, or NULL for system font
 } C2D_Text;
 
 enum
