@@ -5,12 +5,7 @@
 #pragma once
 #include "base.h"
 
-struct C2D_Font_s
-{
-	CFNT_s* cfnt;
-	C3D_Tex* glyphSheets;
-	float textScale;
-};
+struct C2D_Font_s;
 typedef struct C2D_Font_s* C2D_Font;
 
 /** @defgroup Font Font functions
@@ -83,5 +78,11 @@ charWidthInfo_s* C2D_FontGetCharWidthInfo(C2D_Font font, int glyphIndex);
  * @param[in] scaleY Size to scale in Y
  */
 void C2D_FontCalcGlyphPos(C2D_Font font, fontGlyphPos_s* out, int glyphIndex, u32 flags, float scaleX, float scaleY);
+
+/** @brief Get the font info structure associated with the font
+ * @param[in] font Font to read from, or NULL for the system font
+ * @returns FINF associated with the font
+ */
+FINF_s* C2D_FontGetInfo(C2D_Font font);
 
 /** @} */

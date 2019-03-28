@@ -233,3 +233,11 @@ void C2D_FontCalcGlyphPos(C2D_Font font, fontGlyphPos_s* out, int glyphIndex, u3
 	else
 		fontCalcGlyphPos(out, font->cfnt, glyphIndex, flags, scaleX, scaleY);
 }
+
+FINF_s* C2D_FontGetInfo(C2D_Font font)
+{
+	if (!font)
+		return fontGetInfo(NULL);
+	else
+		return fontGetInfo(font->cfnt);
+}
