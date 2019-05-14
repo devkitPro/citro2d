@@ -115,11 +115,11 @@ static C2D_Font C2Di_FontLoadFromArchive(u64 binary_lowpath)
 		Handle romfs_handle;
 		u64	romfs_size = 0;
 		u32	romfs_bytes_read = 0;
-	
+
 		FS_Path	savedatacheck_path = { PATH_BINARY, 16, (u8*)lowPath };
 		u8 file_binary_lowpath[20] = {};
 		FS_Path	romfs_path = { PATH_BINARY, 20, file_binary_lowpath };
-	
+
 		if (R_FAILED(FSUSER_OpenFileDirectly(&romfs_handle, (FS_ArchiveID)0x2345678a, savedatacheck_path, romfs_path, FS_OPEN_READ, 0)))
 		{
 			free(font);
@@ -131,7 +131,7 @@ static C2D_Font C2Di_FontLoadFromArchive(u64 binary_lowpath)
 			FSFILE_Close(romfs_handle);
 			return NULL;
 		}
-	
+
 		u8* romfs_data_buffer = malloc(romfs_size);
 		if (!romfs_data_buffer)
 		{
@@ -147,9 +147,9 @@ static C2D_Font C2Di_FontLoadFromArchive(u64 binary_lowpath)
 			return NULL;
 		}
 		FSFILE_Close(romfs_handle);
-	
+
 		u8* compFontData = romfs_data_buffer + sizeMod;
-	
+
 		u32 fontSize = *(u32*)(compFontData) >> 8;
 		font->cfnt = linearAlloc(fontSize);
 		if (font->cfnt)
@@ -197,6 +197,7 @@ C2D_Font C2D_FontLoadSystem(CFG_Region region)
 				break;
 			return C2Di_FontLoadFromArchive(0x0004009b00014302);
 	}
+	fontEnsureMapped();
 	return NULL;
 }
 
