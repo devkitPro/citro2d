@@ -436,4 +436,17 @@ static inline bool C2D_DrawCircleSolid(
 {
 	return C2D_DrawCircle(x,y,z,radius,clr,clr,clr,clr);
 }
+
+/** @brief Draws a line (a rotated rectangle) using the GPU (with a solid color)
+ *  @param[in] x0 X coordinate of the start of the line
+ *  @param[in] y0 Y coordinate of the start of the line
+ *  @param[in] x1 X coordinate of the end of the line
+ *  @param[in] y1 Y coordinate of the end of the line
+ *  @param[in] z Depth of the line
+ *  @param[in] w Width of the line
+ *  @param[in] color 32-bit RGBA color of the line
+*/
+bool C2D_DrawLine(
+	float x0, float y0, float x1, float y1,
+	float z, float w, u32 clr);
 /** @} */
