@@ -402,7 +402,7 @@ bool C2D_DrawLine(float x0, float y0, float x1, float y1, float z, float w, u32 
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	float angle = atan2f(x1-x0, y1-y0) + C3D_Angle(.25);
+	float angle = atan2f(y1-y0, x1-x0) + C3D_Angle(.25);
 	float dy = w/2 * sinf(angle);
 	float dx = w/2 * cosf(angle);
 	C2Di_AppendVtx(x0 - dx, y0 - dy, z, -1.0f, -1.0f, 0.0f, 1.0f, clr);
