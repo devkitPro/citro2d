@@ -338,8 +338,7 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 		return false;
 
 	C2Di_SetCircle(false);
-	// Not necessary:
-	//C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
 
 	C2Di_AppendVtx(x0, y0, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
@@ -357,8 +356,7 @@ bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u3
 		return false;
 
 	C2Di_SetCircle(false);
-	// Not necessary:
-	//C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
 
 	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
@@ -380,8 +378,7 @@ bool C2D_DrawEllipse(float x, float y, float z, float w, float h, u32 clr0, u32 
 		return false;
 
 	C2Di_SetCircle(true);
-	// Not necessary:
-	//C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
 
 	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, -1.0f, -1.0f, clr0);
