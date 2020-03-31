@@ -348,6 +348,33 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 	return true;
 }
 
+bool C2D_DrawLine(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, float thickness, float depth)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return false;
+	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
+		return false;
+
+	float dx = x1-x0, dy = y1-y0, len = sqrt(dx*dx+dy*dy), th = thickness/2;
+	float ux = -dy/len, uy = dx/len;
+	float px0 = x0-ux*th, py0 = y0-uy*th, px1 = x0+ux*th, py1 = y0+uy*th, px2 = x1+ux*th, py2 = y1+uy*th, px3 = x1-ux*th, py3 = y1-uy*th;
+
+	C2Di_SetCircle(false);
+	// Not necessary:
+	//C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_Update();
+
+	C2Di_AppendVtx(px0, py0, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
+	C2Di_AppendVtx(px1, py1, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
+	C2Di_AppendVtx(px2, py2, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
+
+	C2Di_AppendVtx(px2, py2, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
+	C2Di_AppendVtx(px3, py3, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
+	C2Di_AppendVtx(px0, py0, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
+	return true;
+}
+
 bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u32 clr1, u32 clr2, u32 clr3)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
