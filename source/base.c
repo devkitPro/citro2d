@@ -356,9 +356,9 @@ bool C2D_DrawLine(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, fl
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	float dx = x1-x0, dy = y1-y0, len = sqrt(dx*dx+dy*dy), th = thickness/2;
-	float ux = -dy/len, uy = dx/len;
-	float px0 = x0-ux*th, py0 = y0-uy*th, px1 = x0+ux*th, py1 = y0+uy*th, px2 = x1+ux*th, py2 = y1+uy*th, px3 = x1-ux*th, py3 = y1-uy*th;
+	float dx = x1-x0, dy = y1-y0, len = sqrtf(dx*dx+dy*dy), th = thickness/2;
+	float ux = (-dy/len)*th, uy = (dx/len)*th;
+	float px0 = x0-ux, py0 = y0-uy, px1 = x0+ux, py1 = y0+uy, px2 = x1+ux, py2 = y1+uy, px3 = x1-ux, py3 = y1-uy;
 
 	C2Di_SetCircle(false);
 	// Not necessary:
