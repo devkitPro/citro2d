@@ -408,9 +408,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 				}
 				for (u32 i = 0; i < text->words; i++)
 				{
-					// If there's at least one word, calculate the total text width
-					// if (words[i].start != NULL && words[i].end != NULL)
-						whitespaceWidth[words[i].start->lineNo] += words[i].end->xPos + words[i].end->width - words[i].start->xPos;
+					// Calculate the total text width
+					whitespaceWidth[words[i].start->lineNo] += words[i].end->xPos + words[i].end->width - words[i].start->xPos;
 				}
 				for (u32 i = 0; i < text->lines; i++)
 				{
@@ -441,8 +440,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 				{
 					u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
 					float glyphW = scaleX*cur->width;
-					// Specified X value plus the scaled beginning offset plus the scaled offset from the beginning plus the calculated whitespace width
-					float glyphX = scaleX*words[consecutiveWordNum].xBegin + scaleX*(cur->xPos - words[consecutiveWordNum].start->xPos); // scaleX*cur->xPos + scaleX*whitespaceWidth[cur->lineNo]*cur->wordNo
+					float glyphX = scaleX*words[consecutiveWordNum].xBegin + scaleX*(cur->xPos - words[consecutiveWordNum].start->xPos);
 					float glyphY = y + dispY*cur->lineNo;
 
 					C2Di_SetTex(cur->sheet);
