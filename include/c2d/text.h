@@ -20,14 +20,20 @@ typedef struct
 	size_t      begin; ///< Reserved for internal use.
 	size_t      end;   ///< Reserved for internal use.
 	float       width; ///< Width of the text in pixels, according to 1x scale metrics.
-	u32         lines; ///< Number of lines in the text, according to 1x scale metrics;
+	u32         lines; ///< Number of lines in the text.
+	u32         words; ///< Number of words in the text.
 	C2D_Font    font;  ///< Font used to draw the text, or NULL for system font
 } C2D_Text;
 
 enum
 {
-	C2D_AtBaseline = BIT(0), ///< Matches the Y coordinate with the baseline of the font.
-	C2D_WithColor  = BIT(1), ///< Draws text with color.
+	C2D_AtBaseline       = BIT(0), ///< Matches the Y coordinate with the baseline of the font.
+	C2D_WithColor        = BIT(1), ///< Draws text with color.
+	C2D_AlignLeft        = 0 << 2, ///< Draws text aligned to the left.
+	C2D_AlignRight       = 1 << 2, ///< Draws text aligned to the right.
+	C2D_AlignCenter      = 2 << 2, ///< Draws text centered.
+	C2D_AlignJustified   = 3 << 2, ///< Draws text justified. Right edge is x + text->width.
+	C2D_AlignMask        = BIT(2) | BIT(3), ///< Bitmask for alignment values
 };
 
 /** @brief Creates a new text buffer.
