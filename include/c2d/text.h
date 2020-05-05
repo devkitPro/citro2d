@@ -32,7 +32,7 @@ enum
 	C2D_AlignLeft        = 0 << 2, ///< Draws text aligned to the left.
 	C2D_AlignRight       = 1 << 2, ///< Draws text aligned to the right.
 	C2D_AlignCenter      = 2 << 2, ///< Draws text centered.
-	C2D_AlignJustified   = 3 << 2, ///< Draws text justified. Right edge is x + text->width.
+	C2D_AlignJustified   = 3 << 2, ///< Draws text justified. Right edge is x + scaleX*text->width.
 	C2D_AlignMask        = BIT(2) | BIT(3), ///< Bitmask for alignment values
 };
 

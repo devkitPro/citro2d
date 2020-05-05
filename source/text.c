@@ -417,8 +417,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					// Transform it from total text width to total whitespace width
 					whitespaceWidth[i] = text->width - whitespaceWidth[i];
 					// And then get the width of a single whitespace
-					if (lines[cur->lineNo].words > 1)
-						whitespaceWidth[i] /= lines[cur->lineNo].words - 1;
+					if (lines[i].words > 1)
+						whitespaceWidth[i] /= lines[i].words - 1;
 				}
 
 				// Set up final word beginnings and ends
