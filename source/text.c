@@ -423,7 +423,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 				// Set up final word beginnings and ends
 				words[0].xBegin = x;
-				words[0].xEnd = words[0].end->xPos + words[0].end->width - words[0].start->xPos;
+				words[0].xEnd = words[0].xBegin + words[0].end->xPos + words[0].end->width - words[0].start->xPos;
 				for (u32 i = 1; i < text->words; i++)
 				{
 					if (words[i-1].start->lineNo != words[i].start->lineNo)
