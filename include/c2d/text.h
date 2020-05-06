@@ -28,12 +28,13 @@ typedef struct
 enum
 {
 	C2D_AtBaseline       = BIT(0), ///< Matches the Y coordinate with the baseline of the font.
-	C2D_WithColor        = BIT(1), ///< Draws text with color.
-	C2D_AlignLeft        = 0 << 2, ///< Draws text aligned to the left.
+	C2D_WithColor        = BIT(1), ///< Draws text with color. Requires a u32 color value.
+	C2D_AlignLeft        = 0 << 2, ///< Draws text aligned to the left. This is the default.
 	C2D_AlignRight       = 1 << 2, ///< Draws text aligned to the right.
 	C2D_AlignCenter      = 2 << 2, ///< Draws text centered.
-	C2D_AlignJustified   = 3 << 2, ///< Draws text justified. Right edge is x + scaleX*text->width.
-	C2D_AlignMask        = BIT(2) | BIT(3), ///< Bitmask for alignment values
+	C2D_AlignJustified   = 3 << 2, ///< Draws text justified. When C2D_WordWrap is not specified, right edge is x + scaleX*text->width. Otherwise, right edge is x + the width specified for those values.
+	C2D_AlignMask        = BIT(2) | BIT(3), ///< Bitmask for alignment values.
+	C2D_WordWrap         = BIT(4), ///< Draws text with wrapping of full words before specified width. Requires a float value, passed after color if C2D_WithColor is specified.
 };
 
 /** @brief Creates a new text buffer.
