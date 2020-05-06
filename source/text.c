@@ -112,9 +112,7 @@ void C2D_TextBufClear(C2D_TextBuf buf)
 {
 	buf->glyphCount = 0;
 	for (C2Di_Glyph* g = buf->glyphs; g != buf->glyphs + buf->glyphBufSize; g++)
-	{
 		g->isWhitespace = false;
-	}
 }
 
 size_t C2D_TextBufGetNumGlyphs(C2D_TextBuf buf)
@@ -137,9 +135,7 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 	u32 wordNum = 0;
 	// Somewhat hacky initialization to prevent problems with immediately parsed whitespace
 	if (buf->glyphCount < buf->glyphBufSize)
-	{
 		buf->glyphs[buf->glyphCount].isWhitespace = true;
-	}
 	while (buf->glyphCount < buf->glyphBufSize)
 	{
 		uint32_t code;
@@ -284,31 +280,29 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	if (flags & C2D_WithColor)
 		color = va_arg(va, u32);
 	if (flags & C2D_WordWrap)
-		maxWidth = (float)va_arg(va, double); // Passed as float, but varargs promotes to double.
+		maxWidth = va_arg(va, double); // Passed as float, but varargs promotes to double.
 
 	va_end(va);
 
 	C2Di_SetCircle(false);
 
 	// Get information about lines
-	struct line {
+	struct line
+	{
 		u32 words;
 		u32 wordStart;
 	};
 	struct line lines[text->lines];
 	memset(lines, 0, sizeof(struct line) * text->lines);
 	for (cur = begin; cur != end; cur++)
-	{
 		if (cur->wordNo >= lines[cur->lineNo].words)
 			lines[cur->lineNo].words = cur->wordNo + 1;
-	}
 	for (u32 i = 1; i < text->lines; i++)
-	{
 		lines[i].wordStart = lines[i-1].wordStart + lines[i-1].words;
-	}
 
 	// Get information about words
-	struct word {
+	struct word
+	{
 		C2Di_Glyph* start;
 		C2Di_Glyph* end;
 		float wrapXOffset;
@@ -381,144 +375,139 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 			}
 			break;
 		case C2D_AlignRight:
+		{
+			float finalLineWidths[words[text->words-1].newLineNumber + 1];
+			u32 currentWord = 0;
+			while (currentWord != text->words)
 			{
-				float finalLineWidths[words[text->words-1].newLineNumber + 1];
-				u32 currentWord = 0;
-				while (currentWord != text->words)
-				{
-					u32 nextLineWord = currentWord + 1;
-					// Advance nextLineWord to the next word that's on a different line, or the end
-					while (nextLineWord != text->words && words[nextLineWord].newLineNumber == words[currentWord].newLineNumber) nextLineWord++;
-					// Finally, set the new line width
-					finalLineWidths[words[currentWord].newLineNumber] = words[nextLineWord-1].end->xPos + words[nextLineWord-1].end->width - words[currentWord].start->xPos;
+				u32 nextLineWord = currentWord + 1;
+				// Advance nextLineWord to the next word that's on a different line, or the end
+				while (nextLineWord != text->words && words[nextLineWord].newLineNumber == words[currentWord].newLineNumber) nextLineWord++;
+				// Finally, set the new line width
+				finalLineWidths[words[currentWord].newLineNumber] = words[nextLineWord-1].end->xPos + words[nextLineWord-1].end->width - words[currentWord].start->xPos;
 
-					currentWord = nextLineWord;
-				}
-
-				for (cur = begin; cur != end; cur++)
-				{
-					u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
-					float glyphW = scaleX*cur->width;
-					float glyphX = x + scaleX*(cur->xPos + words[consecutiveWordNum].wrapXOffset - finalLineWidths[words[consecutiveWordNum].newLineNumber]);
-					float glyphY = y + dispY*words[consecutiveWordNum].newLineNumber;
-
-					C2Di_SetTex(cur->sheet);
-					C2Di_Update();
-					C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
-				}
+				currentWord = nextLineWord;
 			}
-			break;
+
+			for (cur = begin; cur != end; cur++)
+			{
+				u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
+				float glyphW = scaleX*cur->width;
+				float glyphX = x + scaleX*(cur->xPos + words[consecutiveWordNum].wrapXOffset - finalLineWidths[words[consecutiveWordNum].newLineNumber]);
+				float glyphY = y + dispY*words[consecutiveWordNum].newLineNumber;
+
+				C2Di_SetTex(cur->sheet);
+				C2Di_Update();
+				C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
+			}
+		}
+		break;
 		case C2D_AlignCenter:
+		{
+			float finalLineWidths[words[text->words-1].newLineNumber + 1];
+			u32 currentWord = 0;
+			while (currentWord != text->words)
 			{
-				float finalLineWidths[words[text->words-1].newLineNumber + 1];
-				u32 currentWord = 0;
-				while (currentWord != text->words)
-				{
-					u32 nextLineWord = currentWord + 1;
-					// Advance nextLineWord to the next word that's on a different line, or the end
-					while (nextLineWord != text->words && words[nextLineWord].newLineNumber == words[currentWord].newLineNumber) nextLineWord++;
-					// Finally, set the new line width
-					finalLineWidths[words[currentWord].newLineNumber] = words[nextLineWord-1].end->xPos + words[nextLineWord-1].end->width - words[currentWord].start->xPos;
+				u32 nextLineWord = currentWord + 1;
+				// Advance nextLineWord to the next word that's on a different line, or the end
+				while (nextLineWord != text->words && words[nextLineWord].newLineNumber == words[currentWord].newLineNumber) nextLineWord++;
+				// Finally, set the new line width
+				finalLineWidths[words[currentWord].newLineNumber] = words[nextLineWord-1].end->xPos + words[nextLineWord-1].end->width - words[currentWord].start->xPos;
 
-					currentWord = nextLineWord;
-				}
-
-				for (cur = begin; cur != end; cur++)
-				{
-					u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
-					float glyphW = scaleX*cur->width;
-					float glyphX = x + scaleX*(cur->xPos + words[consecutiveWordNum].wrapXOffset - finalLineWidths[words[consecutiveWordNum].newLineNumber]/2);
-					float glyphY = y + dispY*words[consecutiveWordNum].newLineNumber;
-
-					C2Di_SetTex(cur->sheet);
-					C2Di_Update();
-					C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
-				}
+				currentWord = nextLineWord;
 			}
-			break;
+
+			for (cur = begin; cur != end; cur++)
+			{
+				u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
+				float glyphW = scaleX*cur->width;
+				float glyphX = x + scaleX*(cur->xPos + words[consecutiveWordNum].wrapXOffset - finalLineWidths[words[consecutiveWordNum].newLineNumber]/2);
+				float glyphY = y + dispY*words[consecutiveWordNum].newLineNumber;
+
+				C2Di_SetTex(cur->sheet);
+				C2Di_Update();
+				C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
+			}
+		}
+		break;
 		case C2D_AlignJustified:
+		{
+			// Get total width available for whitespace for all lines after wrapping
+			struct justifyInfo
 			{
-				// Get total width available for whitespace for all lines after wrapping
-				struct justifyInfo {
-					float whitespaceWidth;
-					u32 wordStart;
-					u32 words;
-				};
-				struct justifyInfo justifiedLineInfo[words[text->words - 1].newLineNumber + 1];
-				for (u32 i = 0; i < words[text->words - 1].newLineNumber + 1; i++)
-				{
-					justifiedLineInfo[i].whitespaceWidth = 0;
-					justifiedLineInfo[i].words = 0;
-					justifiedLineInfo[i].wordStart = 0;
-				}
-				for (u32 i = 0; i < text->words; i++)
-				{
-					// Calculate the total text width
-					justifiedLineInfo[words[i].newLineNumber].whitespaceWidth += words[i].end->xPos + words[i].end->width - words[i].start->xPos;
-					// Increment amount of words
-					justifiedLineInfo[words[i].newLineNumber].words++;
-					// And set the word starts
-					if (i > 0 && words[i-1].newLineNumber != words[i].newLineNumber)
-						justifiedLineInfo[words[i].newLineNumber].wordStart = i;
-				}
-				for (u32 i = 0; i < words[text->words - 1].newLineNumber + 1; i++)
-				{
-					// Transform it from total text width to total whitespace width
-					justifiedLineInfo[i].whitespaceWidth = maxWidth - scaleX*justifiedLineInfo[i].whitespaceWidth;
-					// And then get the width of a single whitespace
-					if (justifiedLineInfo[i].words > 1)
-						justifiedLineInfo[i].whitespaceWidth /= justifiedLineInfo[i].words - 1;
-				}
-
-				// Set up final word beginnings and ends
-				struct wordPos {
-					float xBegin;
-					float xEnd;
-				};
-				struct wordPos wordPositions[text->words];
-				wordPositions[0].xBegin = 0;
-				wordPositions[0].xEnd = wordPositions[0].xBegin + words[0].end->xPos + words[0].end->width - words[0].start->xPos;
-				for (u32 i = 1; i < text->words; i++)
-				{
-					if (words[i-1].newLineNumber != words[i].newLineNumber)
-					{
-						wordPositions[i].xBegin = 0;
-					}
-					else
-					{
-						wordPositions[i].xBegin = wordPositions[i-1].xEnd;
-					}
-					wordPositions[i].xEnd = wordPositions[i].xBegin + words[i].end->xPos + words[i].end->width - words[i].start->xPos;
-				}
-
-				for (cur = begin; cur != end; cur++)
-				{
-					u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
-					float glyphW = scaleX*cur->width;
-					// The given X position, plus the scaled beginning position for this word, plus the offset of this glyph within the word, plus the whitespace width for this line times the word number within the line
-					float glyphX = x + scaleX*wordPositions[consecutiveWordNum].xBegin + scaleX*(cur->xPos - words[consecutiveWordNum].start->xPos) + justifiedLineInfo[words[consecutiveWordNum].newLineNumber].whitespaceWidth*(consecutiveWordNum - justifiedLineInfo[words[consecutiveWordNum].newLineNumber].wordStart);
-					float glyphY = y + dispY*words[consecutiveWordNum].newLineNumber;
-
-					C2Di_SetTex(cur->sheet);
-					C2Di_Update();
-					C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-					C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
-				}
+				float whitespaceWidth;
+				u32 wordStart;
+				u32 words;
+			};
+			struct justifyInfo justifiedLineInfo[words[text->words - 1].newLineNumber + 1];
+			for (u32 i = 0; i < words[text->words - 1].newLineNumber + 1; i++)
+			{
+				justifiedLineInfo[i].whitespaceWidth = 0;
+				justifiedLineInfo[i].words = 0;
+				justifiedLineInfo[i].wordStart = 0;
 			}
-			break;
+			for (u32 i = 0; i < text->words; i++)
+			{
+				// Calculate the total text width
+				justifiedLineInfo[words[i].newLineNumber].whitespaceWidth += words[i].end->xPos + words[i].end->width - words[i].start->xPos;
+				// Increment amount of words
+				justifiedLineInfo[words[i].newLineNumber].words++;
+				// And set the word starts
+				if (i > 0 && words[i-1].newLineNumber != words[i].newLineNumber)
+					justifiedLineInfo[words[i].newLineNumber].wordStart = i;
+			}
+			for (u32 i = 0; i < words[text->words - 1].newLineNumber + 1; i++)
+			{
+				// Transform it from total text width to total whitespace width
+				justifiedLineInfo[i].whitespaceWidth = maxWidth - scaleX*justifiedLineInfo[i].whitespaceWidth;
+				// And then get the width of a single whitespace
+				if (justifiedLineInfo[i].words > 1)
+					justifiedLineInfo[i].whitespaceWidth /= justifiedLineInfo[i].words - 1;
+			}
+
+			// Set up final word beginnings and ends
+			struct wordPos
+			{
+				float xBegin;
+				float xEnd;
+			};
+			struct wordPos wordPositions[text->words];
+			wordPositions[0].xBegin = 0;
+			wordPositions[0].xEnd = wordPositions[0].xBegin + words[0].end->xPos + words[0].end->width - words[0].start->xPos;
+			for (u32 i = 1; i < text->words; i++)
+			{
+				wordPositions[i].xBegin = words[i-1].newLineNumber != words[i].newLineNumber ? 0 : wordPositions[i-1].xEnd;
+				wordPositions[i].xEnd = wordPositions[i].xBegin + words[i].end->xPos + words[i].end->width - words[i].start->xPos;
+			}
+
+			for (cur = begin; cur != end; cur++)
+			{
+				u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
+				float glyphW = scaleX*cur->width;
+				// The given X position, plus the scaled beginning position for this word, plus the offset of this glyph within the word, plus the whitespace width for this line times the word number within the line
+				float glyphX = x + scaleX*wordPositions[consecutiveWordNum].xBegin + scaleX*(cur->xPos - words[consecutiveWordNum].start->xPos) + justifiedLineInfo[words[consecutiveWordNum].newLineNumber].whitespaceWidth*(consecutiveWordNum - justifiedLineInfo[words[consecutiveWordNum].newLineNumber].wordStart);
+				float glyphY = y + dispY*words[consecutiveWordNum].newLineNumber;
+
+				C2Di_SetTex(cur->sheet);
+				C2Di_Update();
+				C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
+				C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
+			}
+		}
+		break;
 	}
 }
