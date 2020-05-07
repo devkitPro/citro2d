@@ -1,4 +1,5 @@
 #include "internal.h"
+#include <alloca.h>
 #include <c2d/text.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -356,11 +357,13 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 	C2Di_SetCircle(false);
 
-	C2Di_LineInfo lines[text->lines];
-	C2Di_WordInfo words[text->words];
+	C2Di_LineInfo* lines = NULL;
+	C2Di_WordInfo* words = NULL;
 
 	if (flags & C2D_WordWrap)
 	{
+		lines = alloca(sizeof(*lines)*text->lines);
+		words = alloca(sizeof(*words)*text->words);
 		C2Di_CalcLineInfo(text, lines, words);
 		// The first word will never have a wrap offset in X or Y
 		for (u32 i = 1; i < text->words; i++)
@@ -393,12 +396,12 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		case C2D_AlignLeft:
 			for (cur = begin; cur != end; ++cur)
 			{
-				u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
 				float glyphW = scaleX*cur->width;
 				float glyphX;
 				float glyphY;
 				if (flags & C2D_WordWrap)
 				{
+					u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
 					glyphX = x+scaleX*(cur->xPos + words[consecutiveWordNum].wrapXOffset);
 					glyphY = y+dispY*words[consecutiveWordNum].newLineNumber;
 				}
@@ -487,7 +490,11 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		case C2D_AlignJustified:
 		{
 			if (!(flags & C2D_WordWrap))
+			{
+				lines = alloca(sizeof(*lines)*text->lines);
+				words = alloca(sizeof(*words)*text->words);
 				C2Di_CalcLineInfo(text, lines, words);
+			}
 			// Get total width available for whitespace for all lines after wrapping
 			struct justifyInfo
 			{
