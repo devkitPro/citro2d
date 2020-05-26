@@ -13,6 +13,7 @@ C2D_SpriteSheet C2D_SpriteSheetLoad(const char* filename)
 {
 	FILE* f = fopen(filename, "rb");
 	if (!f) return NULL;
+	setvbuf(f, NULL, _IOFBF, 64*1024);
 	C2D_SpriteSheet ret = C2D_SpriteSheetLoadFromHandle(f);
 	fclose(f);
 	return ret;
