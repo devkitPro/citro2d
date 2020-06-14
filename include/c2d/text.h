@@ -33,7 +33,7 @@ enum
 	C2D_AlignRight       = 1 << 2, ///< Draws text aligned to the right.
 	C2D_AlignCenter      = 2 << 2, ///< Draws text centered.
 	C2D_AlignJustified   = 3 << 2, ///< Draws text justified. When C2D_WordWrap is not specified, right edge is x + scaleX*text->width. Otherwise, right edge is x + the width specified for those values.
-	C2D_AlignMask        = BIT(2) | BIT(3), ///< Bitmask for alignment values.
+	C2D_AlignMask        = 3 << 2, ///< Bitmask for alignment values.
 	C2D_WordWrap         = BIT(4), ///< Draws text with wrapping of full words before specified width. Requires a float value, passed after color if C2D_WithColor is specified.
 };
 

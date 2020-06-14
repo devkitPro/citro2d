@@ -17,8 +17,7 @@ typedef struct C2Di_Glyph_s
 	{
 		float left, top, right, bottom;
 	} texcoord;
-	u32 wordNo : 31;
-	bool isWhitespace : 1;
+	u32 wordNo;
 } C2Di_Glyph;
 
 struct C2D_TextBuf_s
@@ -126,8 +125,6 @@ void C2D_TextBufDelete(C2D_TextBuf buf)
 void C2D_TextBufClear(C2D_TextBuf buf)
 {
 	buf->glyphCount = 0;
-	for (C2Di_Glyph* g = buf->glyphs; g != buf->glyphs + buf->glyphBufSize; g++)
-		g->isWhitespace = false;
 }
 
 size_t C2D_TextBufGetNumGlyphs(C2D_TextBuf buf)
@@ -148,9 +145,7 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 	text->begin = buf->glyphCount;
 	text->width = 0.0f;
 	u32 wordNum = 0;
-	// Somewhat hacky initialization to prevent problems with immediately parsed whitespace
-	if (buf->glyphCount < buf->glyphBufSize)
-		buf->glyphs[buf->glyphCount].isWhitespace = true;
+	bool lastWasWhitespace = false;
 	while (buf->glyphCount < buf->glyphBufSize)
 	{
 		uint32_t code;
@@ -161,8 +156,8 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 			units = 1;
 		} else if (code == 0 || code == '\n')
 		{
-			// If we last parsed whitespace, increment the word counter
-			if (!buf->glyphs[buf->glyphCount].isWhitespace)
+			// If we last parsed non-whitespace, increment the word counter
+			if (!lastWasWhitespace)
 				wordNum++;
 			break;
 		}
@@ -185,16 +180,13 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 			glyph->texcoord.top    = glyphData.texcoord.top;
 			glyph->texcoord.right  = glyphData.texcoord.right;
 			glyph->texcoord.bottom = glyphData.texcoord.bottom;
-			glyph->isWhitespace    = false;
+			lastWasWhitespace = false;
 		}
-		else
+		// Intentionally doesn't advance the buffer. Just uses the next glyph as a placeholder for "whitespace happened" until the next nonwhitespace
+		else if (!lastWasWhitespace)
 		{
-			// Intentionally doesn't advance the buffer. Just uses the next glyph as a placeholder for "whitespace happened" until the next nonwhitespace
-			if (!buf->glyphs[buf->glyphCount].isWhitespace)
-			{
-				wordNum++;
-				buf->glyphs[buf->glyphCount].isWhitespace = true;
-			}
+			wordNum++;
+			lastWasWhitespace = true;
 		}
 		text->width += glyphData.xAdvance;
 	}
@@ -278,9 +270,9 @@ static inline void C2Di_CalcLineInfo(const C2D_Text* text, C2Di_LineInfo* lines,
 	for (cur = begin; cur != end; cur++)
 	{
 		u32 consecutiveWordNum = cur->wordNo + lines[cur->lineNo].wordStart;
-		if (words[consecutiveWordNum].end == NULL || cur->xPos + cur->width > words[consecutiveWordNum].end->xPos + words[consecutiveWordNum].end->width)
+		if (!words[consecutiveWordNum].end || cur->xPos + cur->width > words[consecutiveWordNum].end->xPos + words[consecutiveWordNum].end->width)
 			words[consecutiveWordNum].end = cur;
-		if (words[consecutiveWordNum].start == NULL || cur->xPos < words[consecutiveWordNum].start->xPos)
+		if (!words[consecutiveWordNum].start || cur->xPos < words[consecutiveWordNum].start->xPos)
 			words[consecutiveWordNum].start = cur;
 		words[consecutiveWordNum].newLineNumber = cur->lineNo;
 	}
@@ -496,13 +488,12 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 				C2Di_CalcLineInfo(text, lines, words);
 			}
 			// Get total width available for whitespace for all lines after wrapping
-			struct justifyInfo
+			struct
 			{
 				float whitespaceWidth;
 				u32 wordStart;
 				u32 words;
-			};
-			struct justifyInfo justifiedLineInfo[words[text->words - 1].newLineNumber + 1];
+			} justifiedLineInfo[words[text->words - 1].newLineNumber + 1];
 			for (u32 i = 0; i < words[text->words - 1].newLineNumber + 1; i++)
 			{
 				justifiedLineInfo[i].whitespaceWidth = 0;
@@ -529,12 +520,11 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 			}
 
 			// Set up final word beginnings and ends
-			struct wordPos
+			struct
 			{
 				float xBegin;
 				float xEnd;
-			};
-			struct wordPos wordPositions[text->words];
+			} wordPositions[text->words];
 			wordPositions[0].xBegin = 0;
 			wordPositions[0].xEnd = wordPositions[0].xBegin + words[0].end->xPos + words[0].end->width - words[0].start->xPos;
 			for (u32 i = 1; i < text->words; i++)
