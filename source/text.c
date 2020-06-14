@@ -307,12 +307,8 @@ static inline void C2Di_CalcLineWidths(float* widths, const C2D_Text* text, cons
 	{
 		memset(widths, 0, sizeof(float) * text->lines);
 		for (C2Di_Glyph* cur = &text->buf->glyphs[text->begin]; cur != &text->buf->glyphs[text->end]; cur++)
-		{
 			if (cur->xPos + cur->width > widths[cur->lineNo])
-			{
 				widths[cur->lineNo] = cur->xPos + cur->width;
-			}
-		}
 	}
 }
 
