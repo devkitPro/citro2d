@@ -281,24 +281,38 @@ static inline void C2Di_CalcLineInfo(const C2D_Text* text, C2Di_LineInfo* lines,
 static inline void C2Di_CalcLineWidths(float* widths, const C2D_Text* text, const C2Di_WordInfo* words, bool wrap)
 {
 	u32 currentWord = 0;
-	while (currentWord != text->words)
+	if (words)
 	{
-		u32 nextLineWord = currentWord + 1;
-		// Advance nextLineWord to the next word that's on a different line, or the end
-		if (wrap)
+		while (currentWord != text->words)
 		{
-			while (nextLineWord != text->words && words[nextLineWord].newLineNumber == words[currentWord].newLineNumber) nextLineWord++;
-			// Finally, set the new line width
-			widths[words[currentWord].newLineNumber] = words[nextLineWord-1].end->xPos + words[nextLineWord-1].end->width - words[currentWord].start->xPos;
-		}
-		else
-		{
-			while (nextLineWord != text->words && words[nextLineWord].start->lineNo == words[currentWord].start->lineNo) nextLineWord++;
-			// Finally, set the new line width
-			widths[words[currentWord].start->lineNo] = words[nextLineWord-1].end->xPos + words[nextLineWord-1].end->width - words[currentWord].start->xPos;
-		}
+			u32 nextLineWord = currentWord + 1;
+			// Advance nextLineWord to the next word that's on a different line, or the end
+			if (wrap)
+			{
+				while (nextLineWord != text->words && words[nextLineWord].newLineNumber == words[currentWord].newLineNumber) nextLineWord++;
+				// Finally, set the new line width
+				widths[words[currentWord].newLineNumber] = words[nextLineWord-1].end->xPos + words[nextLineWord-1].end->width - words[currentWord].start->xPos;
+			}
+			else
+			{
+				while (nextLineWord != text->words && words[nextLineWord].start->lineNo == words[currentWord].start->lineNo) nextLineWord++;
+				// Finally, set the new line width
+				widths[words[currentWord].start->lineNo] = words[nextLineWord-1].end->xPos + words[nextLineWord-1].end->width - words[currentWord].start->xPos;
+			}
 
-		currentWord = nextLineWord;
+			currentWord = nextLineWord;
+		}
+	}
+	else
+	{
+		memset(widths, 0, sizeof(float) * text->lines);
+		for (C2Di_Glyph* cur = &text->buf->glyphs[text->begin]; cur != &text->buf->glyphs[text->end]; cur++)
+		{
+			if (cur->xPos + cur->width > widths[cur->lineNo])
+			{
+				widths[cur->lineNo] = cur->xPos + cur->width;
+			}
+		}
 	}
 }
 
