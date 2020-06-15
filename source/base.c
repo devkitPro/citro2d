@@ -178,14 +178,14 @@ void C2D_SceneSize(u32 width, u32 height, bool tilt)
 	ctx->sceneH = height;
 
 	// Check for cached projection matrices
-	if (height == 240 && tilt)
+	if (height == GSP_SCREEN_WIDTH && tilt)
 	{
-		if (width == 400)
+		if (width == GSP_SCREEN_HEIGHT_TOP || width == GSP_SCREEN_HEIGHT_TOP_2X)
 		{
 			Mtx_Copy(&ctx->projMtx, &s_projTop);
 			return;
 		}
-		else if (width == 320)
+		else if (width == GSP_SCREEN_HEIGHT_BOTTOM)
 		{
 			Mtx_Copy(&ctx->projMtx, &s_projBot);
 			return;
@@ -198,7 +198,18 @@ void C2D_SceneSize(u32 width, u32 height, bool tilt)
 
 C3D_RenderTarget* C2D_CreateScreenTarget(gfxScreen_t screen, gfx3dSide_t side)
 {
-	C3D_RenderTarget* target = C3D_RenderTargetCreate(240, screen==GFX_TOP ? 400 : 320, GPU_RB_RGBA8, GPU_RB_DEPTH16);
+	int height;
+	switch (screen)
+	{
+		default:
+		case GFX_BOTTOM:
+			height = GSP_SCREEN_HEIGHT_BOTTOM;
+			break;
+		case GFX_TOP:
+			height = !gfxIsWide() ? GSP_SCREEN_HEIGHT_TOP : GSP_SCREEN_HEIGHT_TOP_2X;
+			break;
+	}
+	C3D_RenderTarget* target = C3D_RenderTargetCreate(GSP_SCREEN_WIDTH, height, GPU_RB_RGBA8, GPU_RB_DEPTH16);
 	if (target)
 		C3D_RenderTargetSetOutput(target, screen, side,
 			GX_TRANSFER_FLIP_VERT(0) | GX_TRANSFER_OUT_TILED(0) | GX_TRANSFER_RAW_COPY(0) |
@@ -461,12 +472,12 @@ void C2Di_Update(void)
 		C3D_TexEnvColor(C3D_GetTexEnv(5), ctx->fadeClr);
 
 	if (flags & C2DiF_DirtyProcTex)
-	{	
+	{
 		if (ctx->flags & C2DiF_ProcTex_Circle) // flags variable is only for dirty flags
 		{
 			C3D_ProcTexBind(1, &ctx->ptCircle);
 			C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptCircleLut);
-			
+
 			// Set TexEnv1 to use proctex to generate a circle.
 			// This circle then either passes through the alpha (if the fragment
 			// is within the circle) or discards the fragment.
