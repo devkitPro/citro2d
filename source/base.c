@@ -206,14 +206,20 @@ void C2D_ViewReset()
 	ctx->flags |= C2DiF_DirtyMdlv;
 }
 
-void C2D_ViewRetrieve(C3D_Mtx* matrix)
+void C2D_ViewSave(C3D_Mtx* matrix)
 {
+	C2Di_Context* ctx = C2Di_GetContext();
 	Mtx_Copy(matrix, &ctx->mdlvMtx);
 }
 
-void C2D_ViewSet(const C3D_Mtx* matrix)
+void C2D_ViewRestore(const C3D_Mtx* matrix)
 {
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return;
+
 	Mtx_Copy(&ctx->mdlvMtx, matrix);
+	ctx->flags |= C2DiF_DirtyMdlv;
 }
 
 void C2D_ViewTranslate(float x, float y)

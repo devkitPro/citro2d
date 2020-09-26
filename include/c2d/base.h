@@ -225,15 +225,15 @@ static inline void C2D_SceneTarget(C3D_RenderTarget* target)
 /** @brief Resets the model transformation matrix. */
 void C2D_ViewReset(void);
 
-/** @brief Retrieves the current model transformation matrix.
- * @param[out] matrix Pointer to output the current matrix to
+/** @brief Saves the current model transformation matrix.
+ * @param[out] matrix Pointer to save the current matrix to
  */
-void C2D_ViewRetrieve(C3D_Mtx* matrix);
+void C2D_ViewSave(C3D_Mtx* matrix);
 
-/** @brief Sets the model transformation matrix.
- * @param[out] matrix Pointer to matrix to set
+/** @brief Restores a previously saved model transformation matrix.
+ * @param[in] matrix Pointer to matrix to restor
  */
-void C2D_ViewSet(const C3D_Mtx* matrix);
+void C2D_ViewRestore(const C3D_Mtx* matrix);
 
 /** @brief Translates everything drawn via the model matrix.
  * @param[in] x Translation in the x direction
