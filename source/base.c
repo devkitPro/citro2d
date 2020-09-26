@@ -206,6 +206,16 @@ void C2D_ViewReset()
 	ctx->flags |= C2DiF_DirtyMdlv;
 }
 
+void C2D_ViewRetrieve(C3D_Mtx* matrix)
+{
+	Mtx_Copy(matrix, &ctx->mdlvMtx);
+}
+
+void C2D_ViewSet(const C3D_Mtx* matrix)
+{
+	Mtx_Copy(&ctx->mdlvMtx, matrix);
+}
+
 void C2D_ViewTranslate(float x, float y)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
