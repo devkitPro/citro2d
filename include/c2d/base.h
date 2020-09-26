@@ -223,7 +223,7 @@ static inline void C2D_SceneTarget(C3D_RenderTarget* target)
 }
 
 /** @brief Resets the model transformation matrix. */
-void C2D_ViewReset();
+void C2D_ViewReset(void);
 
 /** @brief Translates everything drawn via the model matrix.
  * @param[in] x Translation in the x direction
