@@ -232,9 +232,12 @@ void C2D_ViewShear(float x, float y)
 	if (!(ctx->flags & C2DiF_Active))
 		return;
 
-	// Some matrix magic
-	// Mtx_RotateZ(&ctx->mdlvMtx, radians, true);
-	// ctx->flags |= C2DiF_DirtyMdlv;
+	C3D_Mtx mult;
+	Mtx_Identity(&mult);
+	mult.r[0].y = x;
+	mult.r[1].x = y;
+	Mtx_Multiply(&ctx->mdlvMtx, &ctx->mdlvMtx, &mult);
+	ctx->flags |= C2DiF_DirtyMdlv;
 }
 
 void C2D_ViewScale(float x, float y)
