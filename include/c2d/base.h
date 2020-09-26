@@ -222,6 +222,40 @@ static inline void C2D_SceneTarget(C3D_RenderTarget* target)
 	C2D_SceneSize(target->frameBuf.width, target->frameBuf.height, target->linked);
 }
 
+/** @brief Resets the model transformation matrix. */
+void C2D_ViewReset();
+
+/** @brief Translates everything drawn via the model matrix.
+ * @param[in] x Translation in the x direction
+ * @param[in] y Translation in the y direction
+ */
+void C2D_ViewTranslate(float x, float y);
+
+/** @brief Rotates everything drawn via the model matrix.
+ * @param[in] rotation Rotation in the counterclockwise direction in radians
+ */
+void C2D_ViewRotate(float rotation);
+
+/** @brief Rotates everything drawn via the model matrix.
+ * @param[in] rotation Rotation in the counterclockwise direction in degrees
+ */
+static inline void C2D_ViewRotateDegrees(float rotation)
+{
+	C2D_ViewRotate(C3D_AngleFromDegrees(rotation));
+}
+
+/** @brief Shears everything drawn via the model matrix.
+ * @param[in] x Shear factor in the x direction
+ * @param[in] y Shear factor in the y direction
+ */
+void C2D_ViewShear(float x, float y);
+
+/** @brief Scales everything drawn via the model matrix.
+ * @param[in] x Scale factor in the x direction
+ * @param[in] y Scale factor in the y direction
+ */
+void C2D_ViewScale(float x, float y);
+
 /** @brief Helper function to create a render target for a screen
  *  @param[in] screen Screen (GFX_TOP or GFX_BOTTOM)
  *  @param[in] side Side (GFX_LEFT or GFX_RIGHT)
