@@ -484,11 +484,11 @@ void C2Di_Update(void)
 			// Unfortunately, blending the vertex color is not possible
 			// (because proctex is already being used), therefore it is simply multiplied.
 			// texenv1.rgb = texenv0.rgb * vtx.color.rgb;
-			// texenv1.a = texenv0.rgb * proctex.a;
+			// texenv1.a = vtx.color.a * proctex.a;
 			C3D_TexEnv* env = C3D_GetTexEnv(1);
 			C3D_TexEnvInit(env);
 			C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, 0);
-			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_TEXTURE3, 0);
+			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, GPU_TEXTURE3, 0);
 			C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
 		}
 		else
