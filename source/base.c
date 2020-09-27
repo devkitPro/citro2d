@@ -196,7 +196,7 @@ void C2D_SceneSize(u32 width, u32 height, bool tilt)
 	(tilt ? Mtx_OrthoTilt : Mtx_Ortho)(&ctx->projMtx, 0.0f, width, height, 0.0f, 1.0f, -1.0f, true);
 }
 
-void C2D_ViewReset()
+void C2D_ViewReset(void)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
