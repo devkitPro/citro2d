@@ -196,6 +196,76 @@ void C2D_SceneSize(u32 width, u32 height, bool tilt)
 	(tilt ? Mtx_OrthoTilt : Mtx_Ortho)(&ctx->projMtx, 0.0f, width, height, 0.0f, 1.0f, -1.0f, true);
 }
 
+void C2D_ViewReset(void)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return;
+	
+	Mtx_Identity(&ctx->mdlvMtx);
+	ctx->flags |= C2DiF_DirtyMdlv;
+}
+
+void C2D_ViewSave(C3D_Mtx* matrix)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	Mtx_Copy(matrix, &ctx->mdlvMtx);
+}
+
+void C2D_ViewRestore(const C3D_Mtx* matrix)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return;
+
+	Mtx_Copy(&ctx->mdlvMtx, matrix);
+	ctx->flags |= C2DiF_DirtyMdlv;
+}
+
+void C2D_ViewTranslate(float x, float y)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return;
+
+	Mtx_Translate(&ctx->mdlvMtx, x, y, 0.0f, true);
+	ctx->flags |= C2DiF_DirtyMdlv;
+}
+
+void C2D_ViewRotate(float radians)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return;
+
+	Mtx_RotateZ(&ctx->mdlvMtx, radians, true);
+	ctx->flags |= C2DiF_DirtyMdlv;
+}
+
+void C2D_ViewShear(float x, float y)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return;
+
+	C3D_Mtx mult;
+	Mtx_Identity(&mult);
+	mult.r[0].y = x;
+	mult.r[1].x = y;
+	Mtx_Multiply(&ctx->mdlvMtx, &ctx->mdlvMtx, &mult);
+	ctx->flags |= C2DiF_DirtyMdlv;
+}
+
+void C2D_ViewScale(float x, float y)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return;
+
+	Mtx_Scale(&ctx->mdlvMtx, x, y, 1.0f);
+	ctx->flags |= C2DiF_DirtyMdlv;
+}
+
 C3D_RenderTarget* C2D_CreateScreenTarget(gfxScreen_t screen, gfx3dSide_t side)
 {
 	int height;
