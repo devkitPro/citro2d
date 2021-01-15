@@ -46,8 +46,8 @@ static C2D_Font C2Di_PostLoadFont(C2D_Font font)
 			tex->size = glyphInfo->sheetSize;
 			tex->width = glyphInfo->sheetWidth;
 			tex->height = glyphInfo->sheetHeight;
-			tex->param = GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_LINEAR)
-				| GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_BORDER) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_BORDER);
+			tex->param = font.magFilter | font.minFilter | GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_BORDER) |
+						 GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_BORDER);
 			tex->border = 0xFFFFFFFF;
 			tex->lodParam = 0;
 		}
@@ -202,6 +202,12 @@ void C2D_FontFree(C2D_Font font)
 			linearFree(font->cfnt);
 		free(font->glyphSheets);
 	}
+}
+
+void C2D_FontSetFilter(C2D_Font font, GPU_TEXTURE_FILTER_PARAM magFilter, GPU_TEXTURE_FILTER_PARAM minFilter)
+{
+	font.magFilter = magFilter;
+	font.minFilter = minFilter;
 }
 
 int C2D_FontGlyphIndexFromCodePoint(C2D_Font font, u32 codepoint)
