@@ -204,6 +204,21 @@ void C2D_FontFree(C2D_Font font)
 	}
 }
 
+void C2D_FontSetFilter(C2D_Font font, GPU_TEXTURE_FILTER_PARAM magFilter, GPU_TEXTURE_FILTER_PARAM minFilter)
+{
+	if (!font)
+		return;
+
+	TGLP_s* glyphInfo = font->cfnt->finf.tglp;
+
+	int i;
+	for (i = 0; i < glyphInfo->nSheets; i++)
+	{
+		C3D_Tex* tex = &font->glyphSheets[i];
+		C3D_TexSetFilter(tex, magFilter, minFilter);
+	}
+}
+
 int C2D_FontGlyphIndexFromCodePoint(C2D_Font font, u32 codepoint)
 {
 	if (!font)
