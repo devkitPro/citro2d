@@ -57,8 +57,6 @@ struct C2D_Font_s
 	CFNT_s* cfnt;
 	C3D_Tex* glyphSheets;
 	float textScale;
-	GPU_TEXTURE_FILTER_PARAM minFilter;
-	GPU_TEXTURE_FILTER_PARAM magFilter;
 };
 
 static inline C2Di_Context* C2Di_GetContext(void)
