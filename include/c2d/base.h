@@ -357,7 +357,7 @@ static inline bool C2D_DrawImageAtRotated(C2D_Image img, float x, float y, float
 	C2D_DrawParams params =
 	{
 		{ x, y, scaleX*img.subtex->width, scaleY*img.subtex->height },
-		{ img.subtex->width/2.0f, img.subtex->height/2.0f },
+		{ (scaleX*img.subtex->width)/2.0f, (scaleY*img.subtex->height)/2.0f },
 		depth, angle
 	};
 	return C2D_DrawImage(img, &params, tint);
