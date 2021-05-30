@@ -441,8 +441,7 @@ bool C2D_DrawLine(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, fl
 	float px0 = x0-ux, py0 = y0-uy, px1 = x0+ux, py1 = y0+uy, px2 = x1+ux, py2 = y1+uy, px3 = x1-ux, py3 = y1-uy;
 
 	C2Di_SetCircle(false);
-	// Not necessary:
-	//C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_SetSrc(C2DiF_Src_None);
 	C2Di_Update();
 
 	C2Di_AppendVtx(px0, py0, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
