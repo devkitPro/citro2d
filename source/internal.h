@@ -39,17 +39,23 @@ enum
 	C2DiF_DirtyProj    = BIT(1),
 	C2DiF_DirtyMdlv    = BIT(2),
 	C2DiF_DirtyTex     = BIT(3),
-	C2DiF_DirtySrc     = BIT(4),
+	C2DiF_DirtyMode    = BIT(4),
 	C2DiF_DirtyFade    = BIT(5),
-	C2DiF_DirtyProcTex = BIT(6),
 
-	C2DiF_Src_None  = 0,
-	C2DiF_Src_Tex   = BIT(31),
-	C2DiF_Src_Mask  = BIT(31),
+	C2DiF_Mode_Shift  = 8,
+	C2DiF_Mode_Mask   = 0xf << C2DiF_Mode_Shift,
+	C2DiF_Mode_Solid  = 0   << C2DiF_Mode_Shift,
+	C2DiF_Mode_Circle = 1   << C2DiF_Mode_Shift,
+	C2DiF_Mode_Text   = 2   << C2DiF_Mode_Shift,
+	C2DiF_Mode_Image  = 3   << C2DiF_Mode_Shift,
 
-	C2DiF_ProcTex_Circle = BIT(30),
+	C2DiF_ProcTex_Shift  = 12,
+	C2DiF_ProcTex_Mask   = 0xf << C2DiF_ProcTex_Shift,
+	C2DiF_ProcTex_None   = 0   << C2DiF_ProcTex_Shift,
+	C2DiF_ProcTex_Blend  = 1   << C2DiF_ProcTex_Shift,
+	C2DiF_ProcTex_Circle = 2   << C2DiF_ProcTex_Shift,
 
-	C2DiF_DirtyAny = C2DiF_DirtyProj | C2DiF_DirtyMdlv | C2DiF_DirtyTex | C2DiF_DirtySrc | C2DiF_DirtyFade | C2DiF_DirtyProcTex,
+	C2DiF_DirtyAny = C2DiF_DirtyProj | C2DiF_DirtyMdlv | C2DiF_DirtyTex | C2DiF_DirtyMode | C2DiF_DirtyFade,
 };
 
 struct C2D_Font_s
@@ -65,39 +71,22 @@ static inline C2Di_Context* C2Di_GetContext(void)
 	return &__C2Di_Context;
 }
 
-static inline void C2Di_SetSrc(u32 src)
+static inline void C2Di_SetMode(u32 mode)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
-	src &= C2DiF_Src_Mask;
-	if ((ctx->flags & C2DiF_Src_Mask) != src)
-		ctx->flags = C2DiF_DirtySrc | (ctx->flags &~ C2DiF_Src_Mask) | src;
+	mode &= C2DiF_Mode_Mask;
+	if ((ctx->flags & C2DiF_Mode_Mask) != mode)
+		ctx->flags = C2DiF_DirtyMode | (ctx->flags &~ C2DiF_Mode_Mask) | mode;
 }
 
 static inline void C2Di_SetTex(C3D_Tex* tex)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
-	C2Di_SetSrc(C2DiF_Src_Tex);
 	if (tex != ctx->curTex)
 	{
 		ctx->flags |= C2DiF_DirtyTex;
 		ctx->curTex = tex;
 	}
-}
-
-static inline void C2Di_SetCircle(bool iscircle)
-{
-	C2Di_Context* ctx = C2Di_GetContext();
-	if (iscircle && !(ctx->flags & C2DiF_ProcTex_Circle))
-	{
-		ctx->flags |= C2DiF_DirtyProcTex;
-		ctx->flags |= C2DiF_ProcTex_Circle;
-	}
-	else if (!iscircle && (ctx->flags & C2DiF_ProcTex_Circle))
-	{
-		ctx->flags |= C2DiF_DirtyProcTex;
-		ctx->flags &= ~C2DiF_ProcTex_Circle;
-	}
-
 }
 
 typedef struct

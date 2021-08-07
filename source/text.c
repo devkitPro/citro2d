@@ -86,7 +86,7 @@ static void C2Di_TextEnsureLoad(void)
 		tex->height = glyphInfo->sheetHeight;
 		tex->param = GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_LINEAR)
 			| GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_BORDER) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_BORDER);
-		tex->border = 0xFFFFFFFF;
+		tex->border = 0;
 		tex->lodParam = 0;
 	}
 }
@@ -356,7 +356,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 	va_end(va);
 
-	C2Di_SetCircle(false);
+	C2Di_SetMode(C2DiF_Mode_Text);
 
 	C2Di_LineInfo* lines = NULL;
 	C2Di_WordInfo* words = NULL;

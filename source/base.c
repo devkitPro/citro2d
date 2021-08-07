@@ -103,38 +103,23 @@ void C2D_Prepare(void)
 	if (!(ctx->flags & C2DiF_Active))
 		return;
 
-	ctx->flags  = (ctx->flags &~ C2DiF_Src_Mask) | C2DiF_DirtyAny;
+	ctx->flags  = (ctx->flags &~ (C2DiF_Mode_Mask|C2DiF_ProcTex_Mask)) | C2DiF_DirtyAny;
 	ctx->curTex = NULL;
 
 	C3D_BindProgram(&ctx->program);
 	C3D_SetAttrInfo(&ctx->attrInfo);
 	C3D_SetBufInfo(&ctx->bufInfo);
-	C3D_ProcTexBind(1, &ctx->ptBlend);
-	C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptBlendLut);
 
+	// texenv usage:
+	// 0..4: used by switchable mode
+	// 5..6: used by post processing
 	C3D_TexEnv* env;
 
-	// Set texenv0 to retrieve the texture color (or white if disabled)
-	// texenv0.rgba = texture2D(texunit0, vtx.texcoord0);
-	env = C3D_GetTexEnv(0);
+	// Configure texenv4 as a no-op (reserved)
+	env = C3D_GetTexEnv(4);
 	C3D_TexEnvInit(env);
-	//C3D_TexEnvSrc set afterwards by C2Di_Update()
-	C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
-	C3D_TexEnvColor(env, 0xFFFFFFFF);
 
-	//TexEnv1 set afterwards by C2Di_Update()
-
-	/*
-	// Set texenv2 to tint the output of texenv1 with the specified tint
-	// texenv2.rgb = texenv1.rgb * colorwheel(vtx.blend.x);
-	// texenv2.a   = texenv1.a;
-	env = C3D_GetTexEnv(2);
-	C3D_TexEnvInit(env);
-	C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_TEXTURE3, 0);
-	C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
-	*/
-
-	// Set texenv5 to apply the fade color
+	// Configure texenv5 to apply the fade color
 	// texenv5.rgb = mix(texenv4.rgb, fadeclr.rgb, fadeclr.a);
 	// texenv5.a   = texenv4.a;
 	env = C3D_GetTexEnv(5);
@@ -201,7 +186,7 @@ void C2D_ViewReset(void)
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
 		return;
-	
+
 	Mtx_Identity(&ctx->mdlvMtx);
 	ctx->flags |= C2DiF_DirtyMdlv;
 }
@@ -364,7 +349,7 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetCircle(false);
+	C2Di_SetMode(C2DiF_Mode_Image);
 	C2Di_SetTex(img.tex);
 	C2Di_Update();
 
@@ -418,13 +403,12 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 	if (3 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetCircle(false);
-	C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_SetMode(C2DiF_Mode_Solid);
 	C2Di_Update();
 
-	C2Di_AppendVtx(x0, y0, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
-	C2Di_AppendVtx(x1, y1, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
-	C2Di_AppendVtx(x2, y2, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr2);
+	C2Di_AppendVtx(x0, y0, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
+	C2Di_AppendVtx(x1, y1, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
+	C2Di_AppendVtx(x2, y2, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr2);
 	return true;
 }
 
@@ -440,17 +424,16 @@ bool C2D_DrawLine(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, fl
 	float ux = (-dy/len)*th, uy = (dx/len)*th;
 	float px0 = x0-ux, py0 = y0-uy, px1 = x0+ux, py1 = y0+uy, px2 = x1+ux, py2 = y1+uy, px3 = x1-ux, py3 = y1-uy;
 
-	C2Di_SetCircle(false);
-	C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_SetMode(C2DiF_Mode_Solid);
 	C2Di_Update();
 
-	C2Di_AppendVtx(px0, py0, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
-	C2Di_AppendVtx(px1, py1, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
-	C2Di_AppendVtx(px2, py2, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
+	C2Di_AppendVtx(px0, py0, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
+	C2Di_AppendVtx(px1, py1, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
+	C2Di_AppendVtx(px2, py2, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
 
-	C2Di_AppendVtx(px2, py2, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
-	C2Di_AppendVtx(px3, py3, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
-	C2Di_AppendVtx(px0, py0, depth, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
+	C2Di_AppendVtx(px2, py2, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
+	C2Di_AppendVtx(px3, py3, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
+	C2Di_AppendVtx(px0, py0, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
 	return true;
 }
 
@@ -462,17 +445,16 @@ bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u3
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetCircle(false);
-	C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_SetMode(C2DiF_Mode_Solid);
 	C2Di_Update();
 
-	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
-	C2Di_AppendVtx(x,   y+h, z, -1.0f, -1.0f, 0.0f, 1.0f, clr2);
-	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f, 0.0f, 1.0f, clr3);
+	C2Di_AppendVtx(x,   y,   z, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
+	C2Di_AppendVtx(x,   y+h, z, 0.0f, 0.0f, 0.0f, 0.0f, clr2);
+	C2Di_AppendVtx(x+w, y+h, z, 0.0f, 0.0f, 0.0f, 0.0f, clr3);
 
-	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, 0.0f, 1.0f, clr0);
-	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f, 0.0f, 1.0f, clr3);
-	C2Di_AppendVtx(x+w, y,   z, -1.0f, -1.0f, 0.0f, 1.0f, clr1);
+	C2Di_AppendVtx(x,   y,   z, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
+	C2Di_AppendVtx(x+w, y+h, z, 0.0f, 0.0f, 0.0f, 0.0f, clr3);
+	C2Di_AppendVtx(x+w, y,   z, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
 	return true;
 }
 
@@ -484,17 +466,16 @@ bool C2D_DrawEllipse(float x, float y, float z, float w, float h, u32 clr0, u32 
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetCircle(true);
-	C2Di_SetSrc(C2DiF_Src_None);
+	C2Di_SetMode(C2DiF_Mode_Circle);
 	C2Di_Update();
 
-	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, -1.0f, -1.0f, clr0);
-	C2Di_AppendVtx(x,   y+h, z, -1.0f, -1.0f, -1.0f,  1.0f, clr2);
-	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f,  1.0f,  1.0f, clr3);
+	C2Di_AppendVtx(x,   y,   z, 0.0f, 0.0f, -1.0f, -1.0f, clr0);
+	C2Di_AppendVtx(x,   y+h, z, 0.0f, 0.0f, -1.0f,  1.0f, clr2);
+	C2Di_AppendVtx(x+w, y+h, z, 0.0f, 0.0f,  1.0f,  1.0f, clr3);
 
-	C2Di_AppendVtx(x,   y,   z, -1.0f, -1.0f, -1.0f, -1.0f, clr0);
-	C2Di_AppendVtx(x+w, y+h, z, -1.0f, -1.0f,  1.0f,  1.0f, clr3);
-	C2Di_AppendVtx(x+w, y,   z, -1.0f, -1.0f,  1.0f, -1.0f, clr1);
+	C2Di_AppendVtx(x,   y,   z, 0.0f, 0.0f, -1.0f, -1.0f, clr0);
+	C2Di_AppendVtx(x+w, y+h, z, 0.0f, 0.0f,  1.0f,  1.0f, clr3);
+	C2Di_AppendVtx(x+w, y,   z, 0.0f, 0.0f,  1.0f, -1.0f, clr1);
 	return true;
 }
 
@@ -535,46 +516,110 @@ void C2Di_Update(void)
 		C3D_FVUnifMtx4x4(GPU_VERTEX_SHADER, uLoc_mdlvMtx, &ctx->mdlvMtx);
 	if (flags & C2DiF_DirtyTex)
 		C3D_TexBind(0, ctx->curTex);
-	if (flags & C2DiF_DirtySrc)
-		C3D_TexEnvSrc(C3D_GetTexEnv(0), C3D_Both, (ctx->flags & C2DiF_Src_Tex) ? GPU_TEXTURE0 : GPU_CONSTANT, 0, 0);
 	if (flags & C2DiF_DirtyFade)
 		C3D_TexEnvColor(C3D_GetTexEnv(5), ctx->fadeClr);
 
-	if (flags & C2DiF_DirtyProcTex)
-	{
-		if (ctx->flags & C2DiF_ProcTex_Circle) // flags variable is only for dirty flags
-		{
-			C3D_ProcTexBind(1, &ctx->ptCircle);
-			C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptCircleLut);
+	u32 mode = ctx->flags & C2DiF_Mode_Mask;
+	u32 proctex = C2DiF_ProcTex_None;
+	C3D_TexEnv* env;
 
-			// Set TexEnv1 to use proctex to generate a circle.
-			// This circle then either passes through the alpha (if the fragment
-			// is within the circle) or discards the fragment.
-			// Unfortunately, blending the vertex color is not possible
-			// (because proctex is already being used), therefore it is simply multiplied.
-			// texenv1.rgb = texenv0.rgb * vtx.color.rgb;
-			// texenv1.a = vtx.color.a * proctex.a;
-			C3D_TexEnv* env = C3D_GetTexEnv(1);
+	if (flags & C2DiF_DirtyMode) switch (mode)
+	{
+		case C2DiF_Mode_Solid:
+		{
+			// Plain ol' passthrough of vertex color.
+			env = C3D_GetTexEnv(0);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_Both, GPU_PRIMARY_COLOR, 0, 0);
+			C3D_TexEnvFunc(env, C3D_Both, GPU_REPLACE);
+
+			// Reset unused texenv stages
+			C3D_TexEnvInit(C3D_GetTexEnv(1));
+			C3D_TexEnvInit(C3D_GetTexEnv(2));
+			C3D_TexEnvInit(C3D_GetTexEnv(3));
+			break;
+		}
+
+		case C2DiF_Mode_Circle:
+		case C2DiF_Mode_Text:
+		{
+			GPU_TEVSRC alphamask = GPU_TEXTURE0;
+			if (mode == C2DiF_Mode_Circle)
+			{
+				// Generate a circle shaped alpha mask (u^2 + v^2 < 1) using proctex.
+				proctex = C2DiF_ProcTex_Circle;
+				alphamask = GPU_TEXTURE3;
+			}
+
+			// texenv0.rgb = vtxcolor.rgb
+			// texenv0.a = vtxcolor.a * alphamask
+			env = C3D_GetTexEnv(0);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_PRIMARY_COLOR, 0, 0);
+			C3D_TexEnvFunc(env, C3D_RGB, GPU_REPLACE);
+			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, alphamask, 0);
+			C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+
+			// Reset unused texenv stages
+			C3D_TexEnvInit(C3D_GetTexEnv(1));
+			C3D_TexEnvInit(C3D_GetTexEnv(2));
+			C3D_TexEnvInit(C3D_GetTexEnv(3));
+			break;
+		}
+
+		case C2DiF_Mode_Image:
+		{
+			// Use texenv to blend the color source with the grayscale/tinted version of it,
+			// according to a parameter that is passed through with the help of proctex.
+			proctex = C2DiF_ProcTex_Blend;
+
+			// texenv0.rgb = 0.5*texclr.rgb + 0.5
+			// texenv0.a = texclr.a * vtxcolor.a
+			env = C3D_GetTexEnv(0);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_CONSTANT, GPU_CONSTANT);
+			C3D_TexEnvFunc(env, C3D_RGB, GPU_MULTIPLY_ADD);
+			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, GPU_TEXTURE0, 0);
+			C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+			C3D_TexEnvColor(env, 0x808080);
+
+			// K_grayscale = 0.5*vec3(0.299, 0.587, 0.114) + 0.5
+			// texenv1.rgb = 4*dot(texenv0.rgb - 0.5, K_grayscale - 0.5)
+			env = C3D_GetTexEnv(1);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_CONSTANT, 0);
+			C3D_TexEnvFunc(env, C3D_RGB, GPU_DOT3_RGB);
+			C3D_TexEnvColor(env, 0x8ecaa6);
+
+			// texenv2.rgb = texenv1.rgb * vtxcolor.rgb
+			env = C3D_GetTexEnv(2);
 			C3D_TexEnvInit(env);
 			C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, 0);
-			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, GPU_TEXTURE3, 0);
-			C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
-		}
-		else
-		{
-			C3D_ProcTexBind(1, &ctx->ptBlend);
-			C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptBlendLut);
+			C3D_TexEnvFunc(env, C3D_RGB, GPU_MODULATE);
 
-			// Set texenv1 to blend the output of texenv0 with the primary color
-			// texenv1.rgb = mix(texenv0.rgb, vtx.color.rgb, vtx.blend.y);
-			// texenv1.a   = texenv0.a * vtx.color.a;
-			C3D_TexEnv* env = C3D_GetTexEnv(1);
+			// texenv3.rgb = mix(texclr.rgb, texenv2.rgb, vtx.blend.y);
+			env = C3D_GetTexEnv(3);
 			C3D_TexEnvInit(env);
-			C3D_TexEnvSrc(env, C3D_RGB, GPU_PREVIOUS, GPU_PRIMARY_COLOR, GPU_TEXTURE3);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_PREVIOUS, GPU_TEXTURE3);
 			C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
-			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PREVIOUS, GPU_PRIMARY_COLOR, 0);
 			C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
-			C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+			break;
+		}
+	}
+
+	if (proctex && proctex != (ctx->flags & C2DiF_ProcTex_Mask))
+	{
+		ctx->flags = (ctx->flags &~ C2DiF_ProcTex_Mask) | proctex;
+		switch (proctex)
+		{
+			case C2DiF_ProcTex_Blend:
+				C3D_ProcTexBind(1, &ctx->ptBlend);
+				C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptBlendLut);
+				break;
+			case C2DiF_ProcTex_Circle:
+				C3D_ProcTexBind(1, &ctx->ptCircle);
+				C3D_ProcTexLutBind(GPU_LUT_ALPHAMAP, &ctx->ptCircleLut);
+				break;
 		}
 	}
 

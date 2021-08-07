@@ -48,7 +48,7 @@ static C2D_Font C2Di_PostLoadFont(C2D_Font font)
 			tex->height = glyphInfo->sheetHeight;
 			tex->param = GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_LINEAR)
 				| GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_BORDER) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_BORDER);
-			tex->border = 0xFFFFFFFF;
+			tex->border = 0;
 			tex->lodParam = 0;
 		}
 	}
