@@ -42,18 +42,23 @@ enum
 	C2DiF_DirtyMode    = BIT(4),
 	C2DiF_DirtyFade    = BIT(5),
 
-	C2DiF_Mode_Shift  = 8,
-	C2DiF_Mode_Mask   = 0xf << C2DiF_Mode_Shift,
-	C2DiF_Mode_Solid  = 0   << C2DiF_Mode_Shift,
-	C2DiF_Mode_Circle = 1   << C2DiF_Mode_Shift,
-	C2DiF_Mode_Text   = 2   << C2DiF_Mode_Shift,
-	C2DiF_Mode_Image  = 3   << C2DiF_Mode_Shift,
+	C2DiF_Mode_Shift      = 8,
+	C2DiF_Mode_Mask       = 0xf << C2DiF_Mode_Shift,
+	C2DiF_Mode_Solid      = 0   << C2DiF_Mode_Shift,
+	C2DiF_Mode_Circle     = 1   << C2DiF_Mode_Shift,
+	C2DiF_Mode_Text       = 2   << C2DiF_Mode_Shift,
+	C2DiF_Mode_ImageSolid = 3   << C2DiF_Mode_Shift,
+	C2DiF_Mode_ImageMult  = 4   << C2DiF_Mode_Shift,
+	C2DiF_Mode_ImageLuma  = 5   << C2DiF_Mode_Shift,
 
 	C2DiF_ProcTex_Shift  = 12,
 	C2DiF_ProcTex_Mask   = 0xf << C2DiF_ProcTex_Shift,
 	C2DiF_ProcTex_None   = 0   << C2DiF_ProcTex_Shift,
 	C2DiF_ProcTex_Blend  = 1   << C2DiF_ProcTex_Shift,
 	C2DiF_ProcTex_Circle = 2   << C2DiF_ProcTex_Shift,
+
+	C2DiF_TintMode_Shift = 16,
+	C2DiF_TintMode_Mask  = 0xf << C2DiF_TintMode_Shift,
 
 	C2DiF_DirtyAny = C2DiF_DirtyProj | C2DiF_DirtyMdlv | C2DiF_DirtyTex | C2DiF_DirtyMode | C2DiF_DirtyFade,
 };

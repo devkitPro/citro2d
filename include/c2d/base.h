@@ -32,6 +32,13 @@ typedef struct
 	float angle;
 } C2D_DrawParams;
 
+typedef enum
+{
+	C2D_TintSolid, ///< Plain solid tint color
+	C2D_TintMult,  ///< Tint color multiplied by texture color
+	C2D_TintLuma,  ///< Tint color multiplied by grayscale converted texture color
+} C2D_TintMode;
+
 typedef struct
 {
 	u32   color; ///< RGB tint color and Alpha transparency
@@ -304,6 +311,15 @@ static inline void C2D_SceneBegin(C3D_RenderTarget* target)
  */
 void C2D_Fade(u32 color);
 
+/** @brief Configures the formula used to calculate the tinted texture color
+ *  @param[in] mode Tinting mode
+ *  @remark Texture tinting works by linearly interpolating between the regular texture color
+ *          and the tinted texture color according to the blending strength parameter.
+ *          This function can be used to change how the tinted texture color is precisely
+ *          calculated, refer to \ref C2D_TintMode for a list of available tinting modes.
+ */
+void C2D_SetTintMode(C2D_TintMode mode);
+
 /** @} */
 
 /** @defgroup Drawing Drawing functions
@@ -426,7 +442,7 @@ static inline bool C2D_DrawRectSolid(
 	return C2D_DrawRectangle(x,y,z,w,h,clr,clr,clr,clr);
 }
 
-/** @brief Draws an ellipse using the GPU 
+/** @brief Draws an ellipse using the GPU
  *  @param[in] x X coordinate of the top-left vertex of the ellipse
  *  @param[in] y Y coordinate of the top-left vertex of the ellipse
  *  @param[in] z Z coordinate (depth value) to draw the ellipse with
@@ -439,7 +455,7 @@ static inline bool C2D_DrawRectSolid(
  *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
 */
 bool C2D_DrawEllipse(
-	float x, float y, float z, float w, float h, 
+	float x, float y, float z, float w, float h,
 	u32 clr0, u32 clr1, u32 clr2, u32 clr3);
 
 /** @brief Draws a ellipse using the GPU (with a solid color)
@@ -452,7 +468,7 @@ bool C2D_DrawEllipse(
  *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
 */
 static inline bool C2D_DrawEllipseSolid(
-	float x, float y, float z, float w, float h, 
+	float x, float y, float z, float w, float h,
 	u32 clr)
 {
 	return C2D_DrawEllipse(x,y,z,w,h,clr,clr,clr,clr);
@@ -487,7 +503,7 @@ static inline bool C2D_DrawCircle(
  *  @note Switching to and from "circle mode" internally requires an expensive state change. As such, the recommended usage of this feature is to draw all non-circular objects first, then draw all circular objects.
 */
 static inline bool C2D_DrawCircleSolid(
-	float x, float y, float z, float radius, 
+	float x, float y, float z, float radius,
 	u32 clr)
 {
 	return C2D_DrawCircle(x,y,z,radius,clr,clr,clr,clr);

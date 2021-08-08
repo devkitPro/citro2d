@@ -73,7 +73,7 @@ bool C2D_Init(size_t maxObjects)
 		data[i] = (i >= 127) ? 0 : 1;
 	ProcTexLut_FromArray(&ctx->ptCircleLut, data);
 
-	ctx->flags = C2DiF_Active;
+	ctx->flags = C2DiF_Active | (C2DiF_Mode_ImageSolid << (C2DiF_TintMode_Shift-C2DiF_Mode_Shift));
 	ctx->vtxBufPos = 0;
 	ctx->vtxBufLastPos = 0;
 	Mtx_Identity(&ctx->projMtx);
@@ -290,6 +290,30 @@ void C2D_Fade(u32 color)
 	ctx->fadeClr = color;
 }
 
+void C2D_SetTintMode(C2D_TintMode mode)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	if (!(ctx->flags & C2DiF_Active))
+		return false;
+
+	u32 new_mode;
+	switch (mode)
+	{
+		default:
+		case C2D_TintSolid:
+			new_mode = C2DiF_Mode_ImageSolid;
+			break;
+		case C2D_TintMult:
+			new_mode = C2DiF_Mode_ImageMult;
+			break;
+		case C2D_TintLuma:
+			new_mode = C2DiF_Mode_ImageLuma;
+			break;
+	}
+
+	ctx->flags = (ctx->flags &~ C2DiF_TintMode_Mask) | (new_mode << (C2DiF_TintMode_Shift - C2DiF_Mode_Shift));
+}
+
 static inline void C2Di_RotatePoint(float* point, float rsin, float rcos)
 {
 	float x = point[0] * rcos - point[1] * rsin;
@@ -349,7 +373,7 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
 		return false;
 
-	C2Di_SetMode(C2DiF_Mode_Image);
+	C2Di_SetMode((ctx->flags & C2DiF_TintMode_Mask) >> (C2DiF_TintMode_Shift - C2DiF_Mode_Shift));
 	C2Di_SetTex(img.tex);
 	C2Di_Update();
 
@@ -567,7 +591,55 @@ void C2Di_Update(void)
 			break;
 		}
 
-		case C2DiF_Mode_Image:
+		case C2DiF_Mode_ImageSolid:
+		{
+			// Use texenv to blend the color source with the solid tint color,
+			// according to a parameter that is passed through with the help of proctex.
+			proctex = C2DiF_ProcTex_Blend;
+
+			// texenv0.rgb = mix(texclr.rgb, vtxcolor.rgb, vtx.blend.y);
+			// texenv0.a = texclr.a * vtxcolor.a
+			env = C3D_GetTexEnv(0);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_TEXTURE3);
+			C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
+			C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
+			C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
+			C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
+
+			// Reset unused texenv stages
+			C3D_TexEnvInit(C3D_GetTexEnv(1));
+			C3D_TexEnvInit(C3D_GetTexEnv(2));
+			C3D_TexEnvInit(C3D_GetTexEnv(3));
+			break;
+		}
+
+		case C2DiF_Mode_ImageMult:
+		{
+			// Use texenv to blend the color source with the multiply-tinted version of it,
+			// according to a parameter that is passed through with the help of proctex.
+			proctex = C2DiF_ProcTex_Blend;
+
+			// texenv0 = texclr * vtxcolor
+			env = C3D_GetTexEnv(0);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
+			C3D_TexEnvFunc(env, C3D_Both, GPU_MODULATE);
+
+			// texenv1.rgb = mix(texclr.rgb, texenv0.rgb, vtx.blend.y);
+			env = C3D_GetTexEnv(1);
+			C3D_TexEnvInit(env);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_PREVIOUS, GPU_TEXTURE3);
+			C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
+			C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
+
+			// Reset unused texenv stages
+			C3D_TexEnvInit(C3D_GetTexEnv(2));
+			C3D_TexEnvInit(C3D_GetTexEnv(3));
+			break;
+		}
+
+		case C2DiF_Mode_ImageLuma:
 		{
 			// Use texenv to blend the color source with the grayscale/tinted version of it,
 			// according to a parameter that is passed through with the help of proctex.
@@ -579,7 +651,7 @@ void C2Di_Update(void)
 			C3D_TexEnvInit(env);
 			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_CONSTANT, GPU_CONSTANT);
 			C3D_TexEnvFunc(env, C3D_RGB, GPU_MULTIPLY_ADD);
-			C3D_TexEnvSrc(env, C3D_Alpha, GPU_PRIMARY_COLOR, GPU_TEXTURE0, 0);
+			C3D_TexEnvSrc(env, C3D_Alpha, GPU_TEXTURE0, GPU_PRIMARY_COLOR, 0);
 			C3D_TexEnvFunc(env, C3D_Alpha, GPU_MODULATE);
 			C3D_TexEnvColor(env, 0x808080);
 
