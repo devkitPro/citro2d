@@ -22,9 +22,14 @@ typedef struct
 	u32 sceneW, sceneH;
 
 	C2Di_Vertex* vtxBuf;
+	u16* idxBuf;
+
 	size_t vtxBufSize;
 	size_t vtxBufPos;
-	size_t vtxBufLastPos;
+
+	size_t idxBufSize;
+	size_t idxBufPos;
+	size_t idxBufLastPos;
 
 	u32 flags;
 	C3D_Mtx projMtx;
@@ -103,6 +108,8 @@ typedef struct
 } C2Di_Quad;
 
 void C2Di_CalcQuad(C2Di_Quad* quad, const C2D_DrawParams* params);
+void C2Di_AppendTri(void);
+void C2Di_AppendQuad(void);
 void C2Di_AppendVtx(float x, float y, float z, float u, float v, float ptx, float pty, u32 color);
 void C2Di_FlushVtxBuf(void);
 void C2Di_Update(void);

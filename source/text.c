@@ -414,9 +414,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 				C2Di_SetTex(cur->sheet);
 				C2Di_Update();
+				C2Di_AppendQuad();
 				C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
-				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
@@ -446,9 +445,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 				C2Di_SetTex(cur->sheet);
 				C2Di_Update();
+				C2Di_AppendQuad();
 				C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
-				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
@@ -479,9 +477,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 				C2Di_SetTex(cur->sheet);
 				C2Di_Update();
+				C2Di_AppendQuad();
 				C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
-				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);
@@ -552,9 +549,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 				C2Di_SetTex(cur->sheet);
 				C2Di_Update();
+				C2Di_AppendQuad();
 				C2Di_AppendVtx(glyphX,        glyphY,        glyphZ, cur->texcoord.left,  cur->texcoord.top,    0.0f, 1.0f, color);
-				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
-				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX+glyphW, glyphY,        glyphZ, cur->texcoord.right, cur->texcoord.top,    0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX,        glyphY+glyphH, glyphZ, cur->texcoord.left,  cur->texcoord.bottom, 0.0f, 1.0f, color);
 				C2Di_AppendVtx(glyphX+glyphW, glyphY+glyphH, glyphZ, cur->texcoord.right, cur->texcoord.bottom, 0.0f, 1.0f, color);

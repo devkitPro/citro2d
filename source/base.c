@@ -5,12 +5,20 @@ C2Di_Context __C2Di_Context;
 static C3D_Mtx s_projTop, s_projBot;
 static int uLoc_mdlvMtx, uLoc_projMtx;
 
+static inline bool C2Di_CheckBufSpace(C2Di_Context* ctx, unsigned idx, unsigned vtx)
+{
+	size_t free_idx = ctx->idxBufSize - ctx->idxBufPos;
+	size_t free_vtx = ctx->vtxBufSize - ctx->vtxBufPos;
+	return free_idx >= idx && free_vtx >= vtx;
+}
+
 static void C2Di_FrameEndHook(void* unused)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	C2Di_FlushVtxBuf();
 	ctx->vtxBufPos = 0;
-	ctx->vtxBufLastPos = 0;
+	ctx->idxBufPos = 0;
+	ctx->idxBufLastPos = 0;
 }
 
 bool C2D_Init(size_t maxObjects)
@@ -19,14 +27,23 @@ bool C2D_Init(size_t maxObjects)
 	if (ctx->flags & C2DiF_Active)
 		return false;
 
-	ctx->vtxBufSize = 6*maxObjects;
+	ctx->vtxBufSize = 4*maxObjects;
 	ctx->vtxBuf = (C2Di_Vertex*)linearAlloc(ctx->vtxBufSize*sizeof(C2Di_Vertex));
 	if (!ctx->vtxBuf)
 		return false;
 
+	ctx->idxBufSize = 6*maxObjects;
+	ctx->idxBuf = (u16*)linearAlloc(ctx->idxBufSize*sizeof(u16));
+	if (!ctx->idxBuf)
+	{
+		linearFree(ctx->vtxBuf);
+		return false;
+	}
+
 	ctx->shader = DVLB_ParseFile((u32*)render2d_shbin, render2d_shbin_size);
 	if (!ctx->shader)
 	{
+		linearFree(ctx->idxBuf);
 		linearFree(ctx->vtxBuf);
 		return false;
 	}
@@ -75,7 +92,8 @@ bool C2D_Init(size_t maxObjects)
 
 	ctx->flags = C2DiF_Active | (C2DiF_Mode_ImageSolid << (C2DiF_TintMode_Shift-C2DiF_Mode_Shift));
 	ctx->vtxBufPos = 0;
-	ctx->vtxBufLastPos = 0;
+	ctx->idxBufPos = 0;
+	ctx->idxBufLastPos = 0;
 	Mtx_Identity(&ctx->projMtx);
 	Mtx_Identity(&ctx->mdlvMtx);
 	ctx->fadeClr = 0;
@@ -94,6 +112,7 @@ void C2D_Fini(void)
 	C3D_FrameEndHook(NULL, NULL);
 	shaderProgramFree(&ctx->program);
 	DVLB_Free(ctx->shader);
+	linearFree(ctx->idxBuf);
 	linearFree(ctx->vtxBuf);
 }
 
@@ -370,7 +389,7 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
 		return false;
-	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
+	if (!C2Di_CheckBufSpace(ctx, 6, 4))
 		return false;
 
 	C2Di_SetMode((ctx->flags & C2DiF_TintMode_Mask) >> (C2DiF_TintMode_Shift - C2DiF_Mode_Shift));
@@ -407,15 +426,11 @@ bool C2D_DrawImage(C2D_Image img, const C2D_DrawParams* params, const C2D_ImageT
 	const C2D_Tint* tintBotLeft  = tint ? &tint->corners[C2D_BotLeft]  : &s_defaultTint;
 	const C2D_Tint* tintBotRight = tint ? &tint->corners[C2D_BotRight] : &s_defaultTint;
 
-	// Draw triangles
+	C2Di_AppendQuad();
 	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  0, tintTopLeft->blend,  tintTopLeft->color);
+	C2Di_AppendVtx(quad.topRight[0], quad.topRight[1], params->depth, tcTopRight[0], tcTopRight[1], 0, tintTopRight->blend, tintTopRight->color);
 	C2Di_AppendVtx(quad.botLeft[0],  quad.botLeft[1],  params->depth, tcBotLeft[0],  tcBotLeft[1],  0, tintBotLeft->blend,  tintBotLeft->color);
 	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], 0, tintBotRight->blend, tintBotRight->color);
-
-	C2Di_AppendVtx(quad.topLeft[0],  quad.topLeft[1],  params->depth, tcTopLeft[0],  tcTopLeft[1],  0, tintTopLeft->blend,  tintTopLeft->color);
-	C2Di_AppendVtx(quad.botRight[0], quad.botRight[1], params->depth, tcBotRight[0], tcBotRight[1], 0, tintBotRight->blend, tintBotRight->color);
-	C2Di_AppendVtx(quad.topRight[0], quad.topRight[1], params->depth, tcTopRight[0], tcTopRight[1], 0, tintTopRight->blend, tintTopRight->color);
-
 	return true;
 }
 
@@ -424,12 +439,13 @@ bool C2D_DrawTriangle(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
 		return false;
-	if (3 > (ctx->vtxBufSize - ctx->vtxBufPos))
+	if (!C2Di_CheckBufSpace(ctx, 3, 3))
 		return false;
 
 	C2Di_SetMode(C2DiF_Mode_Solid);
 	C2Di_Update();
 
+	C2Di_AppendTri();
 	C2Di_AppendVtx(x0, y0, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
 	C2Di_AppendVtx(x1, y1, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
 	C2Di_AppendVtx(x2, y2, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr2);
@@ -441,7 +457,7 @@ bool C2D_DrawLine(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, fl
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
 		return false;
-	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
+	if (!C2Di_CheckBufSpace(ctx, 6, 4))
 		return false;
 
 	float dx = x1-x0, dy = y1-y0, len = sqrtf(dx*dx+dy*dy), th = thickness/2;
@@ -451,13 +467,11 @@ bool C2D_DrawLine(float x0, float y0, u32 clr0, float x1, float y1, u32 clr1, fl
 	C2Di_SetMode(C2DiF_Mode_Solid);
 	C2Di_Update();
 
+	C2Di_AppendQuad();
 	C2Di_AppendVtx(px0, py0, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
+	C2Di_AppendVtx(px3, py3, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
 	C2Di_AppendVtx(px1, py1, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
 	C2Di_AppendVtx(px2, py2, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
-
-	C2Di_AppendVtx(px2, py2, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
-	C2Di_AppendVtx(px3, py3, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
-	C2Di_AppendVtx(px0, py0, depth, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
 	return true;
 }
 
@@ -466,19 +480,17 @@ bool C2D_DrawRectangle(float x, float y, float z, float w, float h, u32 clr0, u3
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
 		return false;
-	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
+	if (!C2Di_CheckBufSpace(ctx, 6, 4))
 		return false;
 
 	C2Di_SetMode(C2DiF_Mode_Solid);
 	C2Di_Update();
 
+	C2Di_AppendQuad();
 	C2Di_AppendVtx(x,   y,   z, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
+	C2Di_AppendVtx(x+w, y,   z, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
 	C2Di_AppendVtx(x,   y+h, z, 0.0f, 0.0f, 0.0f, 0.0f, clr2);
 	C2Di_AppendVtx(x+w, y+h, z, 0.0f, 0.0f, 0.0f, 0.0f, clr3);
-
-	C2Di_AppendVtx(x,   y,   z, 0.0f, 0.0f, 0.0f, 0.0f, clr0);
-	C2Di_AppendVtx(x+w, y+h, z, 0.0f, 0.0f, 0.0f, 0.0f, clr3);
-	C2Di_AppendVtx(x+w, y,   z, 0.0f, 0.0f, 0.0f, 0.0f, clr1);
 	return true;
 }
 
@@ -487,20 +499,43 @@ bool C2D_DrawEllipse(float x, float y, float z, float w, float h, u32 clr0, u32 
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
 		return false;
-	if (6 > (ctx->vtxBufSize - ctx->vtxBufPos))
+	if (!C2Di_CheckBufSpace(ctx, 6, 4))
 		return false;
 
 	C2Di_SetMode(C2DiF_Mode_Circle);
 	C2Di_Update();
 
+	C2Di_AppendQuad();
 	C2Di_AppendVtx(x,   y,   z, 0.0f, 0.0f, -1.0f, -1.0f, clr0);
+	C2Di_AppendVtx(x+w, y,   z, 0.0f, 0.0f,  1.0f, -1.0f, clr1);
 	C2Di_AppendVtx(x,   y+h, z, 0.0f, 0.0f, -1.0f,  1.0f, clr2);
 	C2Di_AppendVtx(x+w, y+h, z, 0.0f, 0.0f,  1.0f,  1.0f, clr3);
-
-	C2Di_AppendVtx(x,   y,   z, 0.0f, 0.0f, -1.0f, -1.0f, clr0);
-	C2Di_AppendVtx(x+w, y+h, z, 0.0f, 0.0f,  1.0f,  1.0f, clr3);
-	C2Di_AppendVtx(x+w, y,   z, 0.0f, 0.0f,  1.0f, -1.0f, clr1);
 	return true;
+}
+
+void C2Di_AppendTri(void)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	u16* idx = &ctx->idxBuf[ctx->idxBufPos];
+	ctx->idxBufPos += 3;
+
+	*idx++ = ctx->vtxBufPos+0;
+	*idx++ = ctx->vtxBufPos+1;
+	*idx++ = ctx->vtxBufPos+2;
+}
+
+void C2Di_AppendQuad(void)
+{
+	C2Di_Context* ctx = C2Di_GetContext();
+	u16* idx = &ctx->idxBuf[ctx->idxBufPos];
+	ctx->idxBufPos += 6;
+
+	*idx++ = ctx->vtxBufPos+0;
+	*idx++ = ctx->vtxBufPos+2;
+	*idx++ = ctx->vtxBufPos+1;
+	*idx++ = ctx->vtxBufPos+1;
+	*idx++ = ctx->vtxBufPos+2;
+	*idx++ = ctx->vtxBufPos+3;
 }
 
 void C2Di_AppendVtx(float x, float y, float z, float u, float v, float ptx, float pty, u32 color)
@@ -520,10 +555,10 @@ void C2Di_AppendVtx(float x, float y, float z, float u, float v, float ptx, floa
 void C2Di_FlushVtxBuf(void)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
-	size_t len = ctx->vtxBufPos - ctx->vtxBufLastPos;
+	size_t len = ctx->idxBufPos - ctx->idxBufLastPos;
 	if (!len) return;
-	C3D_DrawArrays(GPU_TRIANGLES, ctx->vtxBufLastPos, len);
-	ctx->vtxBufLastPos = ctx->vtxBufPos;
+	C3D_DrawElements(GPU_TRIANGLES, len, C3D_UNSIGNED_SHORT, &ctx->idxBuf[ctx->idxBufLastPos]);
+	ctx->idxBufLastPos = ctx->idxBufPos;
 }
 
 void C2Di_Update(void)
