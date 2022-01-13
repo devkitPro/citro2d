@@ -321,18 +321,19 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	C2Di_Glyph* cur;
 	CFNT_s* systemFont = fontGetSystemFont();
 
-	scaleX *= s_textScale;
-	scaleY *= s_textScale;
-
 	float glyphZ = z;
 	float glyphH;
 	float dispY;
 	if (text->font)
 	{
+		scaleX *= text->font->textScale;
+		scaleY *= text->font->textScale;
 		glyphH = scaleY*text->font->cfnt->finf.tglp->cellHeight;
 		dispY = ceilf(scaleY*text->font->cfnt->finf.lineFeed);
 	} else
 	{
+		scaleX *= s_textScale;
+		scaleY *= s_textScale;
 		glyphH = scaleY*fontGetGlyphInfo(systemFont)->cellHeight;
 		dispY = ceilf(scaleY*fontGetInfo(systemFont)->lineFeed);
 	}
