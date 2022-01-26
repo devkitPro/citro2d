@@ -23,6 +23,7 @@ typedef struct
 	u32         lines; ///< Number of lines in the text.
 	u32         words; ///< Number of words in the text.
 	C2D_Font    font;  ///< Font used to draw the text, or NULL for system font
+	float yScale;      ///< Reserved for internal use.
 } C2D_Text;
 
 enum
@@ -131,7 +132,9 @@ void C2D_TextOptimize(const C2D_Text* text);
 /** @brief Retrieves the total dimensions of a text object.
  *  @param[in] text Pointer to text object.
  *  @param[in] scaleX Horizontal size of the font. 1.0f corresponds to the native size of the font.
+ *                    Ignored if text has been run through C2D_LayoutText before this call.
  *  @param[in] scaleY Vertical size of the font. 1.0f corresponds to the native size of the font.
+ *                    Ignored if text has been run through C2D_LayoutText before this call.
  *  @param[out] outWidth (optional) Variable in which to store the width of the text.
  *  @param[out] outHeight (optional) Variable in which to store the height of the text.
  */
@@ -146,9 +149,32 @@ void C2D_TextGetDimensions(const C2D_Text* text, float scaleX, float scaleY, flo
  *               of the first line of text.
  *  @param[in] z Depth value of the text. If unsure, pass 0.0f.
  *  @param[in] scaleX Horizontal size of the font. 1.0f corresponds to the native size of the font.
+ *                    Ignored if text has been run through C2D_LayoutText before this call.
  *  @param[in] scaleY Vertical size of the font. 1.0f corresponds to the native size of the font.
+ *                    Ignored if text has been run through C2D_LayoutText before this call.
  *  @remarks The default 3DS system font has a glyph height of 30px, and the baseline is at 25px.
  */
 void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, float scaleX, float scaleY, ...);
 
+/** @brief Lays out text for drawing as C2D_DrawText would.
+ *  @param[inout] text Pointer to text object to modify.
+ *  @param[in] flags Text drawing flags.
+ *  @param[in] scaleX Horizontal size of the font. 1.0f corresponds to the native size of the font.
+ *  @param[in] scaleY Vertical size of the font. 1.0f corresponds to the native size of the font.
+ *  @remarks The default 3DS system font has a glyph height of 30px, and the baseline is at 25px.
+ *           If this function is used, only C2D_AtBaseline and C2D_WithColor need to be passed to C2D_DrawText.
+ *           Running a C2D_Text through C2D_LayoutText a second time will not set its layout to the new layout.
+ *           It will instead do nothing.
+ */
+void C2D_LayoutText(C2D_Text* text, u32 flags, float scaleX, float scaleY, ...);
+
+/** @brief Duplicates a text into the given C2D_Text and C2D_TextBuf.
+ *  @param[in] text Pointer to text object to copy.
+ *  @param[out] outText Pointer to text object to copy into.
+ *  @param[inout] buffer Text buffer handle to use.
+ *  @returns Number of characters copied. This may be less than the number of characters in the original text if the
+ *           buffer becomes full.
+ *  @remarks This duplication includes layout data from C2D_LayoutText (or lack thereof)
+ */
+size_t C2D_DuplicateText(const C2D_Text* text, C2D_Text* outText, C2D_TextBuf buffer);
 /** @} */
