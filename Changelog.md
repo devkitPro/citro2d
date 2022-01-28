@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 1.6.0
+
+- Added C2D_SetTintMode: switchable tinting modes (solid tint/multiplicative tint/grayscale tint)
+- Added C2D_FontSetFilter
+- Minor behind-the-scenes performance improvements
+- Miscellaneous bugfixes
+- Further improvements to overall system stability and other minor adjustments have been made to enhance the user experience.
+
 ## Version 1.5.0
 
 - Added for manipulating the View Transformation.
