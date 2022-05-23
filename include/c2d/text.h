@@ -22,6 +22,7 @@ typedef struct
 	float       width; ///< Width of the text in pixels, according to 1x scale metrics.
 	u32         lines; ///< Number of lines in the text.
 	u32         words; ///< Number of words in the text.
+	u32         chars; ///< Number of characters (including whitespace) in the text
 	C2D_Font    font;  ///< Font used to draw the text, or NULL for system font
 } C2D_Text;
 
