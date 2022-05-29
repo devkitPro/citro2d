@@ -30,7 +30,7 @@ enum
 {
 	C2D_AtBaseline       = BIT(0), ///< Matches the Y coordinate with the baseline of the font.
 	C2D_WithColor        = BIT(1), ///< Draws text with color. Requires a u32 color value.
-	C2D_MultiColor       = 3 << 1, ///< Draws text with multiple colors. Requires a u32* with values alternating between the index a color starts at and then the new color, and then a u32 with the length of that array. This is similar to coloredtext tables in Love2D.
+	C2D_MultiColor       = BIT(2), ///< Draws text with multiple colors. Requires a u32* with values alternating between the index a color starts at and then the new color, and then a u32 with the length of that array. This is similar to coloredtext tables in Love2D.
 	C2D_AlignLeft        = 0 << 3, ///< Draws text aligned to the left. This is the default.
 	C2D_AlignRight       = 1 << 3, ///< Draws text aligned to the right.
 	C2D_AlignCenter      = 2 << 3, ///< Draws text centered.
