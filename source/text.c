@@ -1,7 +1,6 @@
 #include "internal.h"
 #include <alloca.h>
 #include <c2d/text.h>
-#include <c2d/base.h>
 #include <stdlib.h>
 #include <stdarg.h>
 
@@ -371,7 +370,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		colors = va_arg(va, u32*);
 		lenColors = va_arg(va, u32);
 	}
-	
+
 	if (flags & C2D_WordWrap)
 		maxWidth = va_arg(va, double); // Passed as float, but varargs promotes to double.
 
