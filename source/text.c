@@ -350,7 +350,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	u32 color = 0xFF000000;
     u32* colors = NULL;
     u32 lenColors = 0;
-//    u32 colors[] = {0, C2D_Color32(255,0,255,255), 1, C2D_Color32(0,255,255,255), 2, C2D_Color32(255,255,255,255), 3, C2D_Color32(255,255,0,255)};
+	
 	float maxWidth = scaleX*text->width;
 
 	va_list va;
@@ -364,8 +364,17 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 			y -= scaleY*fontGetGlyphInfo(systemFont)->baselinePos;
 	}
 	if (flags & C2D_WithColor)
-		colors = va_arg(va, u32*);
-        lenColors = va_arg(va, u32);
+	{
+		if (flags & C2D_MultiColor) 
+		{
+			colors = va_arg(va, u32*);
+        	lenColors = va_arg(va, u32);
+		}
+		else 
+		{
+			color = va_arg(va, u32);
+		}
+	}
 
 	if (flags & C2D_WordWrap)
 		maxWidth = va_arg(va, double); // Passed as float, but varargs promotes to double.
