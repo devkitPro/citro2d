@@ -17,7 +17,7 @@ typedef struct C2Di_Glyph_s
 	{
 		float left, top, right, bottom;
 	} texcoord;
-    u32 charNo;
+	u32 charNo;
 	u32 wordNo;
 } C2Di_Glyph;
 
@@ -146,12 +146,12 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 	text->begin = buf->glyphCount;
 	text->width = 0.0f;
 	u32 wordNum = 0;
-    u32 charNum = text->chars;
+	u32 charNum = text->chars;
 
 	bool lastWasWhitespace = true;
 	while (buf->glyphCount < buf->glyphBufSize)
 	{
-        ++charNum;
+		++charNum;
 		uint32_t code;
 		ssize_t units = decode_utf8(&code, p);
 		if (units == -1)
@@ -179,7 +179,7 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 			glyph->xPos            = text->width + glyphData.xOffset;
 			glyph->lineNo          = lineNo;
 			glyph->wordNo          = wordNum;
-            glyph->charNo          = charNum - 1;
+			glyph->charNo          = charNum - 1;
 			glyph->width           = glyphData.width;
 			glyph->texcoord.left   = glyphData.texcoord.left;
 			glyph->texcoord.top    = glyphData.texcoord.top;
@@ -198,7 +198,7 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 	text->width *= s_textScale;
 	text->lines = 1;
 	text->words = wordNum;
-    text->chars = charNum;
+	text->chars = charNum;
 	return (const char*)p;
 }
 
@@ -214,16 +214,16 @@ const char* C2D_TextFontParse(C2D_Text* text, C2D_Font font, C2D_TextBuf buf, co
 	text->begin  = buf->glyphCount;
 	text->width  = 0.0f;
 	text->words  = 0;
-    text->chars  = 0;
+	text->chars  = 0;
 	text->lines  = 0;
 
 	for (;;)
 	{
 		C2D_Text temp;
-        temp.chars = text->chars;
+		temp.chars = text->chars;
 		str = C2D_TextFontParseLine(&temp, font, buf, str, text->lines++);
 		text->words += temp.words;
-        text->chars = temp.chars;
+		text->chars = temp.chars;
 		if (temp.width > text->width)
 			text->width = temp.width;
 		if (!str || *str != '\n')
@@ -347,8 +347,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		dispY = ceilf(scaleY*fontGetInfo(systemFont)->lineFeed);
 	}
 	u32 color = 0xFF000000;
-    u32* colors = NULL;
-    u32 lenColors = 0;
+	u32* colors = NULL;
+	u32 lenColors = 0;
 	
 	float maxWidth = scaleX*text->width;
 
@@ -412,7 +412,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		}
 	}
 
-    u32 lastColorIdx = 0;
+	u32 lastColorIdx = 0;
 	switch (flags & C2D_AlignMask)
 	{
 		case C2D_AlignLeft:
@@ -433,20 +433,20 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					glyphY = y+dispY*cur->lineNo;
 				}
 
-                if (colors != NULL){
-                    if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
-                        color = colors[lastColorIdx+1];
-                    }
-                    else{
-                        for(size_t i = 0; i < lenColors; i += 2) {
-                            if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
-                                color = colors[i+1];
-                                lastColorIdx = i;
-                                break;
-                            }
-                        }
-                    }
-                }
+				if (colors != NULL){
+					if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
+						color = colors[lastColorIdx+1];
+					}
+					else{
+						for(size_t i = 0; i < lenColors; i += 2) {
+							if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
+								color = colors[i+1];
+								lastColorIdx = i;
+								break;
+							}
+						}
+					}
+				}
 
 				C2Di_SetTex(cur->sheet);
 				C2Di_Update();
@@ -479,20 +479,20 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					glyphY = y + dispY*cur->lineNo;
 				}
 
-                if (colors != NULL){
-                    if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
-                        color = colors[lastColorIdx+1];
-                    }
-                    else{
-                        for(size_t i = 0; i < lenColors; i += 2) {
-                            if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
-                                color = colors[i+1];
-                                lastColorIdx = i;
-                                break;
-                            }
-                        }
-                    }
-                }
+				if (colors != NULL){
+					if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
+						color = colors[lastColorIdx+1];
+					}
+					else{
+						for(size_t i = 0; i < lenColors; i += 2) {
+							if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
+								color = colors[i+1];
+								lastColorIdx = i;
+								break;
+							}
+						}
+					}
+				}
 
 				C2Di_SetTex(cur->sheet);
 				C2Di_Update();
@@ -526,20 +526,20 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					glyphY = y + dispY*cur->lineNo;
 				}
 
-                if (colors != NULL){
-                    if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
-                        color = colors[lastColorIdx+1];
-                    }
-                    else{
-                        for(size_t i = 0; i < lenColors; i += 2) {
-                            if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
-                                color = colors[i+1];
-                                lastColorIdx = i;
-                                break;
-                            }
-                        }
-                    }
-                }
+				if (colors != NULL){
+					if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
+						color = colors[lastColorIdx+1];
+					}
+					else{
+						for(size_t i = 0; i < lenColors; i += 2) {
+							if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
+								color = colors[i+1];
+								lastColorIdx = i;
+								break;
+							}
+						}
+					}
+				}
 
 				C2Di_SetTex(cur->sheet);
 				C2Di_Update();
@@ -613,20 +613,20 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 				float glyphX = x + scaleX*wordPositions[consecutiveWordNum].xBegin + scaleX*(cur->xPos - words[consecutiveWordNum].start->xPos) + justifiedLineInfo[words[consecutiveWordNum].newLineNumber].whitespaceWidth*(consecutiveWordNum - justifiedLineInfo[words[consecutiveWordNum].newLineNumber].wordStart);
 				float glyphY = y + dispY*words[consecutiveWordNum].newLineNumber;
 
-                if (colors != NULL){
-                    if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
-                        color = colors[lastColorIdx+1];
-                    }
-                    else{
-                        for(size_t i = 0; i < lenColors; i += 2) {
-                            if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
-                                color = colors[i+1];
-                                lastColorIdx = i;
-                                break;
-                            }
-                        }
-                    }
-                }
+				if (colors != NULL){
+					if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
+						color = colors[lastColorIdx+1];
+					}
+					else{
+						for(size_t i = 0; i < lenColors; i += 2) {
+							if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
+								color = colors[i+1];
+								lastColorIdx = i;
+								break;
+							}
+						}
+					}
+				}
 
 				C2Di_SetTex(cur->sheet);
 				C2Di_Update();
