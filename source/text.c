@@ -346,10 +346,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		glyphH = scaleY*fontGetGlyphInfo(systemFont)->cellHeight;
 		dispY = ceilf(scaleY*fontGetInfo(systemFont)->lineFeed);
 	}
-	u32 defaultColor = 0xFF000000;
-	u32 color = defaultColor;
-	u32* colors = NULL;
-	u32 lenColors = 0;
+	
+	
 	
 	float maxWidth = scaleX*text->width;
 
@@ -363,9 +361,17 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		else
 			y -= scaleY*fontGetGlyphInfo(systemFont)->baselinePos;
 	}
-	if (flags & C2D_WithColor)
-		color = va_arg(va, u32);
+
 	
+	u32 defaultColor = 0xFF000000;
+	
+	if (flags & C2D_WithColor)
+		defaultColor = va_arg(va, u32);
+	
+	u32 color = defaultColor;
+
+	u32* colors = NULL;
+	u32 lenColors = 0;
 	if (flags & C2D_MultiColor) 
 	{
 		colors = va_arg(va, u32*);
