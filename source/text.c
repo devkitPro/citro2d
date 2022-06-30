@@ -447,7 +447,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					else
 					{
 						color = defaultColor;
-						if (cur-> charNo > colors[0]) 
+						if (cur->charNo >= colors[0]) 
 						{
 							for(size_t i = 0; i < lenColors; i += 2) {
 								if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
@@ -498,7 +498,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					else
 					{
 						color = defaultColor;
-						if (cur-> charNo > colors[0]) 
+						if (cur->charNo >= colors[0]) 
 						{
 							for(size_t i = 0; i < lenColors; i += 2) {
 								if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
@@ -550,7 +550,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					else
 					{
 						color = defaultColor;
-						if (cur-> charNo > colors[0]) 
+						if (cur->charNo >= colors[0]) 
 						{
 							for(size_t i = 0; i < lenColors; i += 2) {
 								if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
@@ -642,7 +642,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					else
 					{
 						color = defaultColor;
-						if (cur-> charNo > colors[0]) 
+						if (cur->charNo >= colors[0]) 
 						{
 							for(size_t i = 0; i < lenColors; i += 2) {
 								if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
