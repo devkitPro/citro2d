@@ -346,7 +346,8 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 		glyphH = scaleY*fontGetGlyphInfo(systemFont)->cellHeight;
 		dispY = ceilf(scaleY*fontGetInfo(systemFont)->lineFeed);
 	}
-	u32 color = 0xFF000000;
+	u32 defaultColor = 0xFF000000;
+	u32 color = defaultColor;
 	u32* colors = NULL;
 	u32 lenColors = 0;
 	
@@ -433,16 +434,21 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					glyphY = y+dispY*cur->lineNo;
 				}
 
-				if (colors != NULL){
-					if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
+				if (colors != NULL)
+				{
+					if(cur->charNo >= colors[lastColorIdx] && (lastColorIdx + 2 >= lenColors || cur->charNo < colors[lastColorIdx+2]))
 						color = colors[lastColorIdx+1];
-					}
-					else{
-						for(size_t i = 0; i < lenColors; i += 2) {
-							if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
-								color = colors[i+1];
-								lastColorIdx = i;
-								break;
+					else
+					{
+						color = defaultColor;
+						if (cur-> charNo > colors[0]) 
+						{
+							for(size_t i = 0; i < lenColors; i += 2) {
+								if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
+									color = colors[i+1];
+									lastColorIdx = i;
+									break;
+								}
 							}
 						}
 					}
@@ -479,16 +485,21 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					glyphY = y + dispY*cur->lineNo;
 				}
 
-				if (colors != NULL){
-					if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
+				if (colors != NULL)
+				{
+					if(cur->charNo >= colors[lastColorIdx] && (lastColorIdx + 2 >= lenColors || cur->charNo < colors[lastColorIdx+2]))
 						color = colors[lastColorIdx+1];
-					}
-					else{
-						for(size_t i = 0; i < lenColors; i += 2) {
-							if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
-								color = colors[i+1];
-								lastColorIdx = i;
-								break;
+					else
+					{
+						color = defaultColor;
+						if (cur-> charNo > colors[0]) 
+						{
+							for(size_t i = 0; i < lenColors; i += 2) {
+								if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
+									color = colors[i+1];
+									lastColorIdx = i;
+									break;
+								}
 							}
 						}
 					}
@@ -526,16 +537,21 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 					glyphY = y + dispY*cur->lineNo;
 				}
 
-				if (colors != NULL){
-					if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
+				if (colors != NULL)
+				{
+					if(cur->charNo >= colors[lastColorIdx] && (lastColorIdx + 2 >= lenColors || cur->charNo < colors[lastColorIdx+2]))
 						color = colors[lastColorIdx+1];
-					}
-					else{
-						for(size_t i = 0; i < lenColors; i += 2) {
-							if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
-								color = colors[i+1];
-								lastColorIdx = i;
-								break;
+					else
+					{
+						color = defaultColor;
+						if (cur-> charNo > colors[0]) 
+						{
+							for(size_t i = 0; i < lenColors; i += 2) {
+								if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
+									color = colors[i+1];
+									lastColorIdx = i;
+									break;
+								}
 							}
 						}
 					}
@@ -613,16 +629,21 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 				float glyphX = x + scaleX*wordPositions[consecutiveWordNum].xBegin + scaleX*(cur->xPos - words[consecutiveWordNum].start->xPos) + justifiedLineInfo[words[consecutiveWordNum].newLineNumber].whitespaceWidth*(consecutiveWordNum - justifiedLineInfo[words[consecutiveWordNum].newLineNumber].wordStart);
 				float glyphY = y + dispY*words[consecutiveWordNum].newLineNumber;
 
-				if (colors != NULL){
-					if(cur->charNo >= colors[lastColorIdx] && cur->charNo < colors[lastColorIdx+2]) {
+				if (colors != NULL)
+				{
+					if(cur->charNo >= colors[lastColorIdx] && (lastColorIdx + 2 >= lenColors || cur->charNo < colors[lastColorIdx+2]))
 						color = colors[lastColorIdx+1];
-					}
-					else{
-						for(size_t i = 0; i < lenColors; i += 2) {
-							if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
-								color = colors[i+1];
-								lastColorIdx = i;
-								break;
+					else
+					{
+						color = defaultColor;
+						if (cur-> charNo > colors[0]) 
+						{
+							for(size_t i = 0; i < lenColors; i += 2) {
+								if (cur->charNo >= colors[i] && (i + 2 >= lenColors || cur->charNo < colors[i+2])) {
+									color = colors[i+1];
+									lastColorIdx = i;
+									break;
+								}
 							}
 						}
 					}
