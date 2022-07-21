@@ -156,9 +156,6 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 			units = 1;
 		} else if (code == 0 || code == '\n')
 		{
-			// If we last parsed non-whitespace, increment the word counter
-			if (!lastWasWhitespace)
-				wordNum++;
 			break;
 		}
 		p += units;
@@ -189,6 +186,11 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 		}
 		text->width += glyphData.xAdvance;
 	}
+
+	// If we last parsed non-whitespace, increment the word counter
+	if (!lastWasWhitespace)
+		wordNum++;
+
 	text->end = buf->glyphCount;
 	text->width *= s_textScale;
 	text->lines = 1;
