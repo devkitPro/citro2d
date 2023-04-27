@@ -309,7 +309,7 @@ static inline void C2D_SceneBegin(C3D_RenderTarget* target)
  *          the rendered pixels will all have the fading color. Everything inbetween is
  *          rendered as a blend of the original pixel color and the fading color.
  */
-void C2D_Fade(u32 color);
+bool C2D_Fade(u32 color);
 
 /** @brief Configures the formula used to calculate the tinted texture color
  *  @param[in] mode Tinting mode
@@ -318,7 +318,7 @@ void C2D_Fade(u32 color);
  *          This function can be used to change how the tinted texture color is precisely
  *          calculated, refer to \ref C2D_TintMode for a list of available tinting modes.
  */
-void C2D_SetTintMode(C2D_TintMode mode);
+bool C2D_SetTintMode(C2D_TintMode mode);
 
 /** @} */
 

@@ -299,7 +299,7 @@ void C2D_TargetClear(C3D_RenderTarget* target, u32 color)
 	C3D_RenderTargetClear(target, C3D_CLEAR_ALL, __builtin_bswap32(color), 0);
 }
 
-void C2D_Fade(u32 color)
+bool C2D_Fade(u32 color)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
@@ -307,9 +307,10 @@ void C2D_Fade(u32 color)
 
 	ctx->flags |= C2DiF_DirtyFade;
 	ctx->fadeClr = color;
+	return true;
 }
 
-void C2D_SetTintMode(C2D_TintMode mode)
+bool C2D_SetTintMode(C2D_TintMode mode)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
@@ -331,6 +332,7 @@ void C2D_SetTintMode(C2D_TintMode mode)
 	}
 
 	ctx->flags = (ctx->flags &~ C2DiF_TintMode_Mask) | (new_mode << (C2DiF_TintMode_Shift - C2DiF_Mode_Shift));
+	return true;
 }
 
 static inline void C2Di_RotatePoint(float* point, float rsin, float rcos)
