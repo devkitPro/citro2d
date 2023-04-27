@@ -299,7 +299,7 @@ void C2D_TargetClear(C3D_RenderTarget* target, u32 color)
 	C3D_RenderTargetClear(target, C3D_CLEAR_ALL, __builtin_bswap32(color), 0);
 }
 
-void C2D_Fade(u32 color)
+bool C2D_Fade(u32 color)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
@@ -309,7 +309,7 @@ void C2D_Fade(u32 color)
 	ctx->fadeClr = color;
 }
 
-void C2D_SetTintMode(C2D_TintMode mode)
+bool C2D_SetTintMode(C2D_TintMode mode)
 {
 	C2Di_Context* ctx = C2Di_GetContext();
 	if (!(ctx->flags & C2DiF_Active))
