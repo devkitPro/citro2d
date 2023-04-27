@@ -307,6 +307,7 @@ bool C2D_Fade(u32 color)
 
 	ctx->flags |= C2DiF_DirtyFade;
 	ctx->fadeClr = color;
+	return true;
 }
 
 bool C2D_SetTintMode(C2D_TintMode mode)
@@ -331,6 +332,7 @@ bool C2D_SetTintMode(C2D_TintMode mode)
 	}
 
 	ctx->flags = (ctx->flags &~ C2DiF_TintMode_Mask) | (new_mode << (C2DiF_TintMode_Shift - C2DiF_Mode_Shift));
+	return true;
 }
 
 static inline void C2Di_RotatePoint(float* point, float rsin, float rcos)
