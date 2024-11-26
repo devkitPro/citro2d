@@ -335,6 +335,12 @@ bool C2D_SetTintMode(C2D_TintMode mode)
 		case C2D_TintSub:
 			new_mode = C2DiF_Mode_ImageSub;
 			break;
+		case C2D_TintOneMinusAdd:
+			new_mode = C2DiF_Mode_ImageOMAdd;
+			break;
+		case C2D_TintOneMinusSub:
+			new_mode = C2DiF_Mode_ImageOMSub;
+			break;
 	}
 
 	ctx->flags = (ctx->flags &~ C2DiF_TintMode_Mask) | (new_mode << (C2DiF_TintMode_Shift - C2DiF_Mode_Shift));
@@ -721,21 +727,26 @@ void C2Di_Update(void)
 			break;
 		}
 		case C2DiF_Mode_ImageAdd:
+		case C2DiF_Mode_ImageOMAdd:
 		{
 			// Use texenv to blend the color source with the addition-tinted version of it,
 			// according to a parameter that is passed through with the help of proctex.
 			proctex = C2DiF_ProcTex_Blend;
 
 			// texenv0 = texclr + vtxcolor
+			// texenv0 = (1-texclr) + vtxcolor
 			env = C3D_GetTexEnv(0);
 			C3D_TexEnvInit(env);
-			C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+			if (mode == C2DiF_Mode_ImageOMAdd){ // if OM set to ONE MINUS
+				C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_ONE_MINUS_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
+			}
 			C3D_TexEnvFunc(env, C3D_RGB, GPU_ADD);
 
 			// texenv1.rgb = mix(texclr.rgb, texenv0.rgb, vtx.blend.y);
 			env = C3D_GetTexEnv(1);
 			C3D_TexEnvInit(env);
-			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_PREVIOUS, GPU_TEXTURE3);
+			C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PREVIOUS, GPU_TEXTURE3);
 			C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
 			C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
 
@@ -745,21 +756,26 @@ void C2Di_Update(void)
 			break;
 		}
 		case C2DiF_Mode_ImageSub:
+		case C2DiF_Mode_ImageOMSub:
 		{
 			// Use texenv to blend the color source with the subtraction-tinted version of it,
 			// according to a parameter that is passed through with the help of proctex.
 			proctex = C2DiF_ProcTex_Blend;
 
 			// texenv0 = texclr - vtxcolor
+			// texenv0 = (1-texclr) - vtxcolor
 			env = C3D_GetTexEnv(0);
 			C3D_TexEnvInit(env);
-			C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_PRIMARY_COLOR, GPU_PRIMARY_COLOR);
+			if (mode == C2DiF_Mode_ImageOMSub){ // if OM set to ONE MINUS
+				C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_ONE_MINUS_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
+			}
 			C3D_TexEnvFunc(env, C3D_RGB, GPU_SUBTRACT);
 
 			// texenv1.rgb = mix(texclr.rgb, texenv0.rgb, vtx.blend.y);
 			env = C3D_GetTexEnv(1);
 			C3D_TexEnvInit(env);
-			C3D_TexEnvSrc(env, C3D_RGB, GPU_TEXTURE0, GPU_PREVIOUS, GPU_TEXTURE3);
+			C3D_TexEnvSrc(env, C3D_Both, GPU_TEXTURE0, GPU_PREVIOUS, GPU_TEXTURE3);
 			C3D_TexEnvOpRgb(env, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_SRC_COLOR, GPU_TEVOP_RGB_ONE_MINUS_SRC_ALPHA);
 			C3D_TexEnvFunc(env, C3D_RGB, GPU_INTERPOLATE);
 
