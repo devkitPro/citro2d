@@ -546,10 +546,10 @@ void C2Di_AppendQuad(void)
 
 	*idx++ = ctx->vtxBufPos+0;
 	*idx++ = ctx->vtxBufPos+2;
-	*idx++ = ctx->vtxBufPos+1;
-	*idx++ = ctx->vtxBufPos+1;
-	*idx++ = ctx->vtxBufPos+2;
 	*idx++ = ctx->vtxBufPos+3;
+	*idx++ = ctx->vtxBufPos+0;
+	*idx++ = ctx->vtxBufPos+3;
+	*idx++ = ctx->vtxBufPos+1;
 }
 
 void C2Di_AppendVtx(float x, float y, float z, float u, float v, float ptx, float pty, u32 color)
