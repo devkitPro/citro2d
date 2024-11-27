@@ -22,6 +22,7 @@ typedef struct
 	float       width; ///< Width of the text in pixels, according to 1x scale metrics.
 	u32         lines; ///< Number of lines in the text.
 	u32         words; ///< Number of words in the text.
+	u32         chars; ///< Number of characters (including whitespace) in the text
 	C2D_Font    font;  ///< Font used to draw the text, or NULL for system font
 } C2D_Text;
 
@@ -29,12 +30,13 @@ enum
 {
 	C2D_AtBaseline       = BIT(0), ///< Matches the Y coordinate with the baseline of the font.
 	C2D_WithColor        = BIT(1), ///< Draws text with color. Requires a u32 color value.
-	C2D_AlignLeft        = 0 << 2, ///< Draws text aligned to the left. This is the default.
-	C2D_AlignRight       = 1 << 2, ///< Draws text aligned to the right.
-	C2D_AlignCenter      = 2 << 2, ///< Draws text centered.
-	C2D_AlignJustified   = 3 << 2, ///< Draws text justified. When C2D_WordWrap is not specified, right edge is x + scaleX*text->width. Otherwise, right edge is x + the width specified for those values.
-	C2D_AlignMask        = 3 << 2, ///< Bitmask for alignment values.
-	C2D_WordWrap         = BIT(4), ///< Draws text with wrapping of full words before specified width. Requires a float value, passed after color if C2D_WithColor is specified.
+	C2D_MultiColor       = BIT(2), ///< Draws text with multiple colors. Requires a u32* with values alternating between the index a color starts at and then the new color, and then a u32 with the length of that array. This is similar to coloredtext tables in Love2D.
+	C2D_AlignLeft        = 0 << 3, ///< Draws text aligned to the left. This is the default.
+	C2D_AlignRight       = 1 << 3, ///< Draws text aligned to the right.
+	C2D_AlignCenter      = 2 << 3, ///< Draws text centered.
+	C2D_AlignJustified   = 3 << 3, ///< Draws text justified. When C2D_WordWrap is not specified, right edge is x + scaleX*text->width. Otherwise, right edge is x + the width specified for those values.
+	C2D_AlignMask        = 3 << 3, ///< Bitmask for alignment values.
+	C2D_WordWrap         = BIT(5), ///< Draws text with wrapping of full words before specified width. Requires a float value, passed after color values if C2D_WithColor or C2D_MultiColor is specified.
 };
 
 /** @brief Creates a new text buffer.
