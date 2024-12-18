@@ -192,7 +192,7 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 		wordNum++;
 
 	text->end = buf->glyphCount;
-	text->width *= s_textScale;
+	text->width *= font ? font->textScale : s_textScale;
 	text->lines = 1;
 	text->words = wordNum;
 	return (const char*)p;
