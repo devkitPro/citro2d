@@ -44,8 +44,9 @@ C2D_Font C2D_FontLoadFromHandle(FILE* f);
 /** @brief Load corresponding font from system archive
  *  @param[in] region Region to get font from
  *  @returns Font handle
- *  @retval NULL Error
+ *  @retval NULL Currently loaded system font
  *  @remark JPN, USA, EUR, and AUS all use the same font.
+ *  @remark If region is an arbitrary region including possibly the current one, it's recommended to initialize cfgu first. This allows much lower RAM usage for the system font.
  */
 C2D_Font C2D_FontLoadSystem(CFG_Region region);
 
