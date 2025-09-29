@@ -184,7 +184,7 @@ C2D_Font C2D_FontLoadSystem(CFG_Region region)
 
 	u8 systemRegion = 0;
 	Result rc = CFGU_SecureInfoGetRegion(&systemRegion);
-	if (R_FAILED(rc) || fontIdx == C2Di_RegionToFontIndex((CFG_Region)systemRegion))
+	if (R_SUCCEEDED(rc) && fontIdx == C2Di_RegionToFontIndex((CFG_Region)systemRegion))
 	{
 		fontEnsureMapped();
 		return NULL;
