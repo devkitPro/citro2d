@@ -4,9 +4,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-static C3D_Tex* s_glyphSheets;
-static float s_textScale;
-
 typedef struct C2Di_Glyph_s
 {
 	u32 lineNo;
@@ -60,35 +57,15 @@ static int C2Di_GlyphComp(const void* _g1, const void* _g2)
 static void C2Di_TextEnsureLoad(void)
 {
 	// Skip if already loaded
-	if (s_glyphSheets)
+	if (g_systemFont.glyphSheets)
 		return;
 
 	// Ensure the shared system font is mapped
 	if (R_FAILED(fontEnsureMapped()))
 		svcBreak(USERBREAK_PANIC);
 
-	// Load the glyph texture sheets
-	CFNT_s* font = fontGetSystemFont();
-	TGLP_s* glyphInfo = fontGetGlyphInfo(font);
-	s_glyphSheets = malloc(sizeof(C3D_Tex)*glyphInfo->nSheets);
-	s_textScale = 30.0f / glyphInfo->cellHeight;
-	if (!s_glyphSheets)
+	if (!C2Di_LoadSystemFont())
 		svcBreak(USERBREAK_PANIC);
-
-	int i;
-	for (i = 0; i < glyphInfo->nSheets; i ++)
-	{
-		C3D_Tex* tex = &s_glyphSheets[i];
-		tex->data = fontGetGlyphSheetTex(font, i);
-		tex->fmt = glyphInfo->sheetFmt;
-		tex->size = glyphInfo->sheetSize;
-		tex->width = glyphInfo->sheetWidth;
-		tex->height = glyphInfo->sheetHeight;
-		tex->param = GPU_TEXTURE_MAG_FILTER(GPU_LINEAR) | GPU_TEXTURE_MIN_FILTER(GPU_LINEAR)
-			| GPU_TEXTURE_WRAP_S(GPU_CLAMP_TO_BORDER) | GPU_TEXTURE_WRAP_T(GPU_CLAMP_TO_BORDER);
-		tex->border = 0;
-		tex->lodParam = 0;
-	}
 }
 
 C2D_TextBuf C2D_TextBufNew(size_t maxGlyphs)
@@ -139,6 +116,8 @@ const char* C2D_TextParseLine(C2D_Text* text, C2D_TextBuf buf, const char* str, 
 
 const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf, const char* str, u32 lineNo)
 {
+	if (!font) font = &g_systemFont;
+
 	const uint8_t* p = (const uint8_t*)str;
 	text->font  = font;
 	text->buf   = buf;
@@ -161,14 +140,11 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 		p += units;
 
 		fontGlyphPos_s glyphData;
-		C2D_FontCalcGlyphPos(font, &glyphData, C2D_FontGlyphIndexFromCodePoint(font, code), 0, 1.0f, 1.0f);
+		C2D_FontCalcGlyphPosFromCodePoint(font, &glyphData, code, 0, 1.0f, 1.0f);
 		if (glyphData.width > 0.0f)
 		{
 			C2Di_Glyph* glyph = &buf->glyphs[buf->glyphCount++];
-			if (font)
-				glyph->sheet = &font->glyphSheets[glyphData.sheetIndex];
-			else
-				glyph->sheet = &s_glyphSheets[glyphData.sheetIndex];
+			glyph->sheet           = &font->glyphSheets[glyphData.sheetIndex];
 			glyph->xPos            = text->width + glyphData.xOffset;
 			glyph->lineNo          = lineNo;
 			glyph->wordNo          = wordNum;
@@ -192,7 +168,7 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 		wordNum++;
 
 	text->end = buf->glyphCount;
-	text->width *= font ? font->textScale : s_textScale;
+	text->width *= font->textScale;
 	text->lines = 1;
 	text->words = wordNum;
 	return (const char*)p;
@@ -205,6 +181,8 @@ const char* C2D_TextParse(C2D_Text* text, C2D_TextBuf buf, const char* str)
 
 const char* C2D_TextFontParse(C2D_Text* text, C2D_Font font, C2D_TextBuf buf, const char* str)
 {
+	if (!font) font = &g_systemFont;
+
 	text->font   = font;
 	text->buf    = buf;
 	text->begin  = buf->glyphCount;
@@ -240,10 +218,8 @@ void C2D_TextGetDimensions(const C2D_Text* text, float scaleX, float scaleY, flo
 		*outWidth  = scaleX*text->width;
 	if (outHeight)
 	{
-		if (text->font)
-			*outHeight = ceilf(scaleY*text->font->textScale*text->font->cfnt->finf.lineFeed)*text->lines;
-		else
-			*outHeight = ceilf(scaleY*s_textScale*fontGetInfo(fontGetSystemFont())->lineFeed)*text->lines;
+		C2D_Font font = text->font ? text->font : &g_systemFont;
+		*outHeight = ceilf(scaleY*font->textScale*font->cfnt->finf.lineFeed)*text->lines;
 	}
 }
 
@@ -321,24 +297,15 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 	C2Di_Glyph* begin = &text->buf->glyphs[text->begin];
 	C2Di_Glyph* end   = &text->buf->glyphs[text->end];
 	C2Di_Glyph* cur;
-	CFNT_s* systemFont = fontGetSystemFont();
 
 	float glyphZ = z;
 	float glyphH;
 	float dispY;
-	if (text->font)
-	{
-		scaleX *= text->font->textScale;
-		scaleY *= text->font->textScale;
-		glyphH = scaleY*text->font->cfnt->finf.tglp->cellHeight;
-		dispY = ceilf(scaleY*text->font->cfnt->finf.lineFeed);
-	} else
-	{
-		scaleX *= s_textScale;
-		scaleY *= s_textScale;
-		glyphH = scaleY*fontGetGlyphInfo(systemFont)->cellHeight;
-		dispY = ceilf(scaleY*fontGetInfo(systemFont)->lineFeed);
-	}
+	C2D_Font font = text->font ? text->font : &g_systemFont;
+	scaleX *= font->textScale;
+	scaleY *= font->textScale;
+	glyphH = scaleY*font->cfnt->finf.tglp->cellHeight;
+	dispY = ceilf(scaleY*font->cfnt->finf.lineFeed);
 	u32 color = 0xFF000000;
 	float maxWidth = scaleX*text->width;
 
@@ -347,10 +314,7 @@ void C2D_DrawText(const C2D_Text* text, u32 flags, float x, float y, float z, fl
 
 	if (flags & C2D_AtBaseline)
 	{
-		if (text->font)
-			y -= scaleY*text->font->cfnt->finf.tglp->baselinePos;
-		else
-			y -= scaleY*fontGetGlyphInfo(systemFont)->baselinePos;
+		y -= scaleY*font->cfnt->finf.tglp->baselinePos;
 	}
 	if (flags & C2D_WithColor)
 		color = va_arg(va, u32);

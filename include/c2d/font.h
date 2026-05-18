@@ -86,6 +86,16 @@ charWidthInfo_s* C2D_FontGetCharWidthInfo(C2D_Font font, int glyphIndex);
  */
 void C2D_FontCalcGlyphPos(C2D_Font font, fontGlyphPos_s* out, int glyphIndex, u32 flags, float scaleX, float scaleY);
 
+/** @brief Calculate glyph position of a given Unicode codepoint. Uses a cached value when the codepoint is ASCII, flags are 0, and scales are 1.
+ * @param[in] font Font to read from, or NULL for system font
+ * @param[out] out Glyph position
+ * @param[in] codepoint The Unicode codepoint of the glyph
+ * @param[in] flags Misc flags
+ * @param[in] scaleX Size to scale in X
+ * @param[in] scaleY Size to scale in Y
+ */
+void C2D_FontCalcGlyphPosFromCodePoint(C2D_Font font, fontGlyphPos_s* out, u32 codepoint, u32 flags, float scaleX, float scaleY);
+
 /** @brief Get the font info structure associated with the font
  * @param[in] font Font to read from, or NULL for the system font
  * @returns FINF associated with the font
