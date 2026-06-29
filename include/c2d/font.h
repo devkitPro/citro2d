@@ -13,6 +13,13 @@ typedef struct C2D_Font_s* C2D_Font;
  */
 
 /** @brief Load a font from a file
+ *
+ * [!note]
+ * For pixel perfect TTF fonts: Make sure that the source font has 34 points per pixel (in EM size 1000) or another equivalent ratio.
+ * It will work fine as long as each pixel is approximately equal to `0.034 * em_size`.
+ * If rescaling your glyphs with a font editor, be sure to also adjust the font's metrics accordingly.
+ * Then load the font, set the texture filters to `GPU_NEAREST` using `C2D_FontSetFilter(font, GPU_NEAREST, GPU_NEAREST)` and off you go!
+ *
  * @param[in] filename Name of the font file (.bcfnt)
  * @returns Font handle
  * @retval NULL Error
