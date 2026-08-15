@@ -146,6 +146,7 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 	text->width = 0.0f;
 	u32 wordNum = 0;
 	bool lastWasWhitespace = true;
+	uint32_t last_code = 0;
 	while (buf->glyphCount < buf->glyphBufSize)
 	{
 		uint32_t code;
@@ -160,9 +161,25 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 		}
 		p += units;
 
+		static const uint32_t break_chars[] = {
+			'/', '-', '&',
+		};
+		bool found_break_char = false;
+		for (int i = 0; i < sizeof(break_chars) / sizeof(break_chars[0]); i++) {
+			if (break_chars[i] == last_code) {
+				found_break_char = true;
+				break;
+			}
+		}
+		if (found_break_char && !lastWasWhitespace) {
+			wordNum++;
+			lastWasWhitespace = true;
+		}
+
 		fontGlyphPos_s glyphData;
 		C2D_FontCalcGlyphPos(font, &glyphData, C2D_FontGlyphIndexFromCodePoint(font, code), 0, 1.0f, 1.0f);
-		if (glyphData.width > 0.0f)
+		// we want to skip zero-width spaces
+		if (glyphData.width > 0.0f && code != 0x200B)
 		{
 			C2Di_Glyph* glyph = &buf->glyphs[buf->glyphCount++];
 			if (font)
@@ -184,7 +201,10 @@ const char* C2D_TextFontParseLine(C2D_Text* text, C2D_Font font, C2D_TextBuf buf
 			wordNum++;
 			lastWasWhitespace = true;
 		}
-		text->width += glyphData.xAdvance;
+		if (code != 0x200B) {
+			text->width += glyphData.xAdvance;
+		}
+		last_code = code;
 	}
 
 	// If we last parsed non-whitespace, increment the word counter
